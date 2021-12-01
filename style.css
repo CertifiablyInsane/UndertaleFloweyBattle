@@ -1,0 +1,21 @@
+#game {
+    border: 16px solid white;
+    width: 1440px;
+    height: 900px;
+    margin: auto;
+}
+
+#logo {
+    margin: auto;
+    width: 512px;
+    height: 100px;
+    text-align: center;
+    background-color: black;
+    font-size: 60px;
+}
+
+body {
+    background-color: black;
+    background-position: center;
+    background-size: cover;
+}
