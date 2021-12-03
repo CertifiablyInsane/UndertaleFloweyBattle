@@ -23,6 +23,15 @@ export default class Battle extends BattleFramework
     create()
     {
         super.create()
+        this.actOneText = 'Check'
+        this.actTwoText = 'Talk'
+        this.actThreeText = 'Deal'
+        this.actFourText = 'Negotiate'
+
+        this.itemOneText = 'KromerBurger'
+        this.itemTwoText = 'ClubsSandwich'
+        this.itemThreeText = 'Pie'
+        //this.itemFourText = 'MonsterCandy'
     }
 
     update()
