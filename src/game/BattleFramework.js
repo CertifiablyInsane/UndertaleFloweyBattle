@@ -8,6 +8,7 @@ export default class BattleFramework extends Phaser.Scene
     /**@type {Phaser.Types.Input.Keyboard.CursorKeys} */
     cursors
 
+
     preload()
     {
         this.cursors = this.input.keyboard.createCursorKeys()
@@ -18,6 +19,40 @@ export default class BattleFramework extends Phaser.Scene
         {
             frameWidth: 448, frameHeight: 192,
         });
+    }
+
+    init()
+    {
+        this.menuOptionOne = this.add.sprite(0, 0, 'star')
+        this.textOne = this.add.text(0, 0, null);
+        this.menuOptionTwo = this.add.sprite(0, 0, 'star');
+        this.textTwo = this.add.text(0, 0, null);
+        this.menuOptionThree = this.add.sprite(0, 0, 'star');
+        this.textThree = this.add.text(0, 0, null);
+        this.menuOptionFour = this.add.sprite(0, 0, 'star');
+        this.textFour = this.add.text(0, 0, null);
+        this.flavourText = this.add.text(0, 0, null);
+    
+        this.clearMenu()
+
+        /*
+        Dear Mr. Wilson,
+
+        If you are reading this, then I never figured out how to find a better way than this utter stupidity.
+
+        Let me explain myself.
+
+        Calling this.destroy() doesn't work unless I establish what type of object the variable is.
+        This is normally fine, but it causes issues when I don't establish the object type for menu options with less than four options
+        (example MERCY)
+        therefore, I must establish and then immediate delete all the variables on initiation so that the engine does cry like an infant
+        when I try to delete a non existant variable.
+
+        By the way, I did look into the @type {Phaser.whatever you put here} thing but I found no luck.
+        
+        Thanks for understanding,
+        Sorry.
+        */
     }
 
     create()
@@ -32,6 +67,7 @@ export default class BattleFramework extends Phaser.Scene
         this.menuOptionCols = true;
         this.menuOptionRows = true;
         this.menuOptionOverload;
+        this.playerSelectedOption;
         this.pressReset = true;
         this.isSpareable = false;
 
@@ -128,10 +164,9 @@ export default class BattleFramework extends Phaser.Scene
                 {
                     this.pressReset = false;
                     this.controlType = 'menu2'
-                    this.generateMenu()
                     this.menuOptionCols = true;
                     this.menuOptionRows = true;
-                    this.flavourText.destroy()
+                    this.generateMenu()
                 }
             }else if(this.cursors.left.isUp && this.cursors.right.isUp && keyZ.isUp && keyX.isUp)
             {
@@ -167,7 +202,7 @@ export default class BattleFramework extends Phaser.Scene
 
                     this.player.setPosition(this.itemButton.x - 80, this.itemButton.y); //set new player pos
 
-                    this.menuOptionOverload = 3 //set number of menu options
+                    this.menuOptionOverload = this.numItems //set number of menu options
                     break;
                 case 4:
                     this.mercyButton.setFrame(7); //set new active
@@ -206,34 +241,31 @@ export default class BattleFramework extends Phaser.Scene
                 if(keyZ.isDown)
                 {
                     this.pressReset = false;
+
+                    this.controlType = 'freemove'
+                    this.player.setPosition(720, 450)
+
                     if(this.currentButton == 1)
                     {
-                        //FIGHT CODE
+                        this.doFight()
                     }else if(this.currentButton == 2)
                     {
                         //ACT CODE
+                        this.doAct(this.playerSelectedOption)
                     }else if(this.currentButton == 3)
                     {
                         //ITEM CODE
+                        this.doItem(this.playerSelectedOption)
                     }else if(this.currentButton == 4)
                     {
                         //MERCY CODE
-                        if(this.isSpareable == true){
-                            //spare
-                        }
+                        this.doMercy()
+
                     }
                 }
                 if(keyX.isDown)//Return
                 {
                     this.controlType = 'menu1';
-                    this.menuOptionOne.destroy()
-                    this.menuOptionTwo.destroy()
-                    this.menuOptionThree.destroy()
-                    this.menuOptionFour.destroy()
-                    this.textOne.destroy()
-                    this.textTwo.destroy()
-                    this.textThree.destroy()
-                    this.textFour.destroy()
                     this.generateMenu();
                 }
             }else if(this.cursors.left.isUp && this.cursors.right.isUp && this.cursors.up.isUp && this.cursors.down.isUp && keyZ.isUp && keyX.isUp)
@@ -248,36 +280,83 @@ export default class BattleFramework extends Phaser.Scene
                 this.menuOptionFour.setVisible(1)
 
                 this.player.setPosition(this.menuOptionOne.x, this.menuOptionOne.y);
+
+                switch(this.currentButton)
+                {
+                    case 2: //If on act button
+                        this.playerSelectedOption = this.actOneText
+                        break;
+                    case 3: //If on item button
+                        this.playerSelectedOption = this.itemOneText
+                        break;
+                }
+
             }else if(this.menuOptionCols == true && this.menuOptionRows == false && this.menuOptionOverload > 1)
             {
                 this.menuOptionOne.setVisible(1)
                 this.menuOptionTwo.setVisible(0)
                 this.menuOptionThree.setVisible(1)
                 this.menuOptionFour.setVisible(1)
+
                 this.player.setPosition(this.menuOptionTwo.x, this.menuOptionTwo.y);
+
+                switch(this.currentButton)
+                {
+                    case 2: //If on act button
+                        this.playerSelectedOption = this.actTwoText
+                        break;
+                    case 3: //If on item button
+                        this.playerSelectedOption = this.itemTwoText
+                        break;
+                }
+
             }else if(this.menuOptionCols == false && this.menuOptionRows == true  && this.menuOptionOverload > 2)
             {
                 this.menuOptionOne.setVisible(1)
                 this.menuOptionTwo.setVisible(1)
                 this.menuOptionThree.setVisible(0)
                 this.menuOptionFour.setVisible(1)
+
                 this.player.setPosition(this.menuOptionThree.x, this.menuOptionThree.y);
+
+                switch(this.currentButton)
+                {
+                    case 2: //If on act button
+                        this.playerSelectedOption = this.actThreeText
+                        break;
+                    case 3: //If on item button
+                        this.playerSelectedOption = this.itemThreeText
+                        break;
+                }
+
             }else if(this.menuOptionCols == false && this.menuOptionRows == false  && this.menuOptionOverload > 3)
             {
                 this.menuOptionOne.setVisible(1)
                 this.menuOptionTwo.setVisible(1)
                 this.menuOptionThree.setVisible(1)
                 this.menuOptionFour.setVisible(0)
+
                 this.player.setPosition(this.menuOptionFour.x, this.menuOptionFour.y);
+
+                switch(this.currentButton)
+                {
+                    case 2: //If on act button
+                        this.playerSelectedOption = this.actFourText
+                        break;
+                    case 3: //If on item button
+                        this.playerSelectedOption = this.itemFourText
+                        break;
+                }
             }
         }
     }
     generateMenu()
     {
+        this.clearMenu()
         if(this.controlType == 'menu1')
         {
             //Flavour text stuff
-            this.flavourText = this.add.text(320, 568, this.generateFlavourText('sample', 0), { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
+            this.flavourText = this.add.text(320, 568, this.generateFlavourText('SAMPLE', 0), { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
         }else if(this.controlType == 'menu2')
         {
             if(this.currentButton == 2)//Act button
@@ -298,8 +377,8 @@ export default class BattleFramework extends Phaser.Scene
                 this.textTwo = this.add.text(352, 680, this.itemTwoText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
                 this.menuOptionThree = this.add.sprite(736, 568, 'star');
                 this.textThree = this.add.text(768, 552, this.itemThreeText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
-                //this.menuOptionFour = this.add.sprite(736, 696, 'star');
-                //this.textFour = this.add.text(768, 680, this.itemFourText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
+                this.menuOptionFour = this.add.sprite(736, 696, 'star');
+                this.textFour = this.add.text(768, 680, this.itemFourText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
             }else if(this.currentButton == 4)//Mercy button
             {
                 this.menuOptionOne = this.add.sprite(320, 568, 'star');
@@ -307,23 +386,16 @@ export default class BattleFramework extends Phaser.Scene
             }
         }
     }
-    generateFlavourText(textParam, numParam)
+    clearMenu()
     {
-        var returnText;
-        if(textParam == 'sample')
-        {
-            switch(numParam)
-            {
-                case 0:
-                    returnText = 'Smells like sample text'
-                    break;
-                case 1:
-                    returnText = 'The sample text fills the air'
-                    break;
-                case 2:
-                    returnText = 'You feel like sample text'
-            }
-            return returnText;
-        }
+        this.menuOptionOne.destroy()
+        this.menuOptionTwo.destroy()
+        this.menuOptionThree.destroy()
+        this.menuOptionFour.destroy()
+        this.textOne.destroy()
+        this.textTwo.destroy()
+        this.textThree.destroy()
+        this.textFour.destroy()
+        this.flavourText.destroy()
     }
 }
