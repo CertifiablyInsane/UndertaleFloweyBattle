@@ -58,8 +58,8 @@ export default class Battle extends BattleFramework
     {
         this.clearMenu()
         this.itemButton.setFrame(4);
-        this.flavourText = this.add.text(320, 568, this.generateFlavourText('USED_ITEM', selectedItem), { fontFamily: '"Trebuchet MS"', fontSize: '32px'})
-        
+        this.flavourText = this.add.text(320, 520, this.generateFlavourText('USED_ITEM', selectedItem), { fontFamily: '"Trebuchet MS"', fontSize: '32px'})
+        this.monsterAttack()
     }
 
     doMercy()
@@ -67,6 +67,12 @@ export default class Battle extends BattleFramework
         console.log("Spare")
         this.clearMenu()
         this.mercyButton.setFrame(6);
+    }
+
+    monsterAttack(attackParam)
+    {
+        this.bullet = this.physics.add.sprite(128, 128, 'player')
+        this.bulletOverlap = this.physics.add.overlap(this.player, this.bullet,this.onDamaged,()=>true,this)
     }
 
     generateFlavourText(categoryParam, textParam)

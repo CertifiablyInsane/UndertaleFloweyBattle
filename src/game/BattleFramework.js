@@ -19,6 +19,10 @@ export default class BattleFramework extends Phaser.Scene
         {
             frameWidth: 448, frameHeight: 192,
         });
+        this.load.spritesheet('hpbar', 'assets/hpbar.png', 
+        {
+            frameWidth: 64, frameHeight: 64,
+        });
     }
 
     init()
@@ -69,7 +73,8 @@ export default class BattleFramework extends Phaser.Scene
         this.menuOptionOverload;
         this.playerSelectedOption;
         this.pressReset = true;
-        this.isSpareable = false;
+        this.totalPlayerHP = 20;
+        this.currentPlayerHP = 20;
 
         //////////////////
         //SCENE CREATION//
@@ -93,10 +98,12 @@ export default class BattleFramework extends Phaser.Scene
             .setScale(0.5)
             .setFrame(6)
 
-        this.battleBox = this.add.sprite(720, 640, 'battle_box')
+        this.battleBox = this.add.sprite(720, 592, 'battle_box')
             .setScale(2)
 
-        this.menuOptionFour;
+        this.hpbar = this.add.sprite(720, 754, 'hpbar')
+        this.hptext = this.add.text(784, 738, '20 / 20', { fontFamily: '"Trebuchet MS"', fontSize: '32px'})
+        this.add.text(624, 738, 'HP', { fontFamily: '"Trebuchet MS"', fontSize: '32px'})
 
         this.generateMenu()
         //////////////////
@@ -356,33 +363,33 @@ export default class BattleFramework extends Phaser.Scene
         if(this.controlType == 'menu1')
         {
             //Flavour text stuff
-            this.flavourText = this.add.text(320, 568, this.generateFlavourText('SAMPLE', 0), { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
+            this.flavourText = this.add.text(320, 520, this.generateFlavourText('SAMPLE', 0), { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
         }else if(this.controlType == 'menu2')
         {
             if(this.currentButton == 2)//Act button
             {
-                this.menuOptionOne = this.add.sprite(320, 568, 'star');
-                this.textOne = this.add.text(352, 552, this.actOneText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
-                this.menuOptionTwo = this.add.sprite(320, 696, 'star');
-                this.textTwo = this.add.text(352, 680, this.actTwoText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
-                this.menuOptionThree = this.add.sprite(736, 568, 'star');
-                this.textThree = this.add.text(768, 552, this.actThreeText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
-                this.menuOptionFour = this.add.sprite(736, 696, 'star');
-                this.textFour = this.add.text(768, 680, this.actFourText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
+                this.menuOptionOne = this.add.sprite(320, 520, 'star');
+                this.textOne = this.add.text(352, 504, this.actOneText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
+                this.menuOptionTwo = this.add.sprite(320, 648, 'star');
+                this.textTwo = this.add.text(352, 632, this.actTwoText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
+                this.menuOptionThree = this.add.sprite(736, 520, 'star');
+                this.textThree = this.add.text(768, 504, this.actThreeText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
+                this.menuOptionFour = this.add.sprite(736, 648, 'star');
+                this.textFour = this.add.text(768, 632, this.actFourText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
             }else if(this.currentButton == 3)//Item button
             {
-                this.menuOptionOne = this.add.sprite(320, 568, 'star');
-                this.textOne = this.add.text(352, 552, this.itemOneText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
-                this.menuOptionTwo = this.add.sprite(320, 696, 'star');
-                this.textTwo = this.add.text(352, 680, this.itemTwoText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
-                this.menuOptionThree = this.add.sprite(736, 568, 'star');
-                this.textThree = this.add.text(768, 552, this.itemThreeText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
-                this.menuOptionFour = this.add.sprite(736, 696, 'star');
-                this.textFour = this.add.text(768, 680, this.itemFourText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
+                this.menuOptionOne = this.add.sprite(320, 520, 'star');
+                this.textOne = this.add.text(352, 504, this.itemOneText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
+                this.menuOptionTwo = this.add.sprite(320, 648, 'star');
+                this.textTwo = this.add.text(352, 632, this.itemTwoText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
+                this.menuOptionThree = this.add.sprite(736, 520, 'star');
+                this.textThree = this.add.text(768, 504, this.itemThreeText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
+                this.menuOptionFour = this.add.sprite(736, 648, 'star');
+                this.textFour = this.add.text(768, 632, this.itemFourText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
             }else if(this.currentButton == 4)//Mercy button
             {
-                this.menuOptionOne = this.add.sprite(320, 568, 'star');
-                this.textOne = this.add.text(352, 552, "Spare", { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
+                this.menuOptionOne = this.add.sprite(320, 520, 'star');
+                this.textOne = this.add.text(352, 504, "Spare", { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
             }
         }
     }
@@ -397,5 +404,34 @@ export default class BattleFramework extends Phaser.Scene
         this.textThree.destroy()
         this.textFour.destroy()
         this.flavourText.destroy()
+
+        console.log(this.controlType);
+    }
+    onDamaged()
+    {
+        this.currentPlayerHP = this.currentPlayerHP - 3;
+        console.log(this.currentPlayerHP)
+        var hpPercent = this.currentPlayerHP / this.totalPlayerHP
+        if(hpPercent == 1){
+            this.hpbar.setFrame(0)
+        }else if(hpPercent >= 0.875){
+            this.hpbar.setFrame(1)
+        }else if(hpPercent >= 0.750){
+            this.hpbar.setFrame(2)
+        }else if(hpPercent >= 0.625){
+            this.hpbar.setFrame(3)
+        }else if(hpPercent >= 0.500){
+            this.hpbar.setFrame(4)
+        }else if(hpPercent >= 0.375){
+            this.hpbar.setFrame(5)
+        }else if(hpPercent >= 0.250){
+            this.hpbar.setFrame(6)
+        }else if(hpPercent <= 0){
+            this.hpbar.setFrame(7)
+        }
+
+        this.hptext.setText(`${this.currentPlayerHP} / 20`)
+    
+        this.bulletOverlap.destroy()
     }
 }
