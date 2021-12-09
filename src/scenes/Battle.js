@@ -23,17 +23,18 @@ export default class Battle extends BattleFramework
     create()
     {
         super.create()
-        this.actOneText = 'Check'
-        this.actTwoText = 'Talk'
-        this.actThreeText = 'Deal'
-        this.actFourText = 'Negotiate'
+        this.actsText = ['Check', 'Talk', 'Deal', 'Negotiate']
 
-        this.itemOneText = 'KromerBurger'
-        this.itemTwoText = 'ClubsSandwich'
-        this.itemThreeText = 'Pie'
-        this.itemFourText = 'MonsterCandy'
+        this.itemsText = ['KromerBurger', 'ClubsSandwich', 'Pie', 'MonsterCandy']
 
         this.numItems = 4
+
+        this.monsterIsSpareable = false;
+        this.monsterHP = 300;
+        this.monsterStage = 0
+
+        this.bullets = this.physics.add.group()
+        this.bulletOverlap = this.physics.add.overlap(this.player, this.bullets,this.onDamaged,()=>true,this)
     }
 
     update()
@@ -45,6 +46,7 @@ export default class Battle extends BattleFramework
     {
         console.log("fight")
         this.fightButton.setFrame(0);
+        this.monsterAttack()
     }
 
     doAct(selectedAction)
@@ -52,6 +54,7 @@ export default class Battle extends BattleFramework
         this.clearMenu()
         console.log(selectedAction)
         this.actButton.setFrame(2);
+        this.monsterAttack()
     }
 
     doItem(selectedItem)
@@ -59,6 +62,29 @@ export default class Battle extends BattleFramework
         this.clearMenu()
         this.itemButton.setFrame(4);
         this.flavourText = this.add.text(320, 520, this.generateFlavourText('USED_ITEM', selectedItem), { fontFamily: '"Trebuchet MS"', fontSize: '32px'})
+        console.log(selectedItem)
+        //ITEM EFFECTS
+        switch(selectedItem)
+        {
+            case 'KromerBurger':
+                this.currentPlayerHP = this.currentPlayerHP + 15;
+                break;
+            case 'ClubsSandwich':
+                this.currentPlayerHP = this.currentPlayerHP + 11;
+                break;
+            case 'Pie':
+                this.currentPlayerHP = this.currentPlayerHP + 20;
+                break;
+            case 'MonsterCandy':
+                this.currentPlayerHP = this.currentPlayerHP + 7;
+                break;
+        }
+        if(this.currentPlayerHP > 20){
+            this.currentPlayerHP = 20
+        }
+        this.numItems--
+        this.itemsText.splice(this.itemsText.indexOf(selectedItem), 1); //remove item from array
+        this.updateHealth()
         this.monsterAttack()
     }
 
@@ -67,12 +93,31 @@ export default class Battle extends BattleFramework
         console.log("Spare")
         this.clearMenu()
         this.mercyButton.setFrame(6);
+        if(this.monsterIsSpareable)
+        {
+            //spare
+        }
+        //this.monsterAttack()
     }
 
     monsterAttack(attackParam)
     {
-        this.bullet = this.physics.add.sprite(128, 128, 'player')
-        this.bulletOverlap = this.physics.add.overlap(this.player, this.bullet,this.onDamaged,()=>true,this)
+        this.generateMenu()
+        this.bullet = this.bullets.create(758, 256, 'player')
+        this.bullet = this.bullets.create(256, 256, 'player')
+        this.bulletOverlap.active = true
+
+        //Attack phase over
+        this.time.addEvent({
+            delay: 5000,
+            callback: ()=>{
+                this.bullets.clear(true, true);
+                this.controlType = 'menu1'
+                this.generateMenu()
+                this.bulletOverlap.active = false
+            },
+            loop: false
+        });
     }
 
     generateFlavourText(categoryParam, textParam)

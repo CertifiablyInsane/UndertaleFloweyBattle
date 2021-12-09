@@ -14,6 +14,8 @@ export default class BattleFramework extends Phaser.Scene
         this.cursors = this.input.keyboard.createCursorKeys()
         this.load.image('player', 'assets/soul.png');
         this.load.image('battle_box', 'assets/battle_box.png');
+        this.load.image('battle_box_lr', 'assets/battle_box_lr.png');
+        this.load.image('battle_box_tb', 'assets/battle_box_tb.png');
         this.load.image('star', 'assets/star.png');
         this.load.spritesheet('battle_buttons', 'assets/battle_buttons.png', 
         {
@@ -27,14 +29,18 @@ export default class BattleFramework extends Phaser.Scene
 
     init()
     {
-        this.menuOptionOne = this.add.sprite(0, 0, 'star')
-        this.textOne = this.add.text(0, 0, null);
-        this.menuOptionTwo = this.add.sprite(0, 0, 'star');
-        this.textTwo = this.add.text(0, 0, null);
-        this.menuOptionThree = this.add.sprite(0, 0, 'star');
-        this.textThree = this.add.text(0, 0, null);
-        this.menuOptionFour = this.add.sprite(0, 0, 'star');
-        this.textFour = this.add.text(0, 0, null);
+        this.menuOptions = [
+            this.add.sprite(0, 0, null), 
+            this.add.sprite(0, 0, null),
+            this.add.sprite(0, 0, null),
+            this.add.sprite(736, 648, 'star')
+        ]
+        this.textOptions = [
+            this.add.text(0, 0, null),
+            this.add.text(0, 0, null),
+            this.add.text(0, 0, null),
+            this.add.text(0, 0, null),
+        ]
         this.flavourText = this.add.text(0, 0, null);
     
         this.clearMenu()
@@ -101,6 +107,16 @@ export default class BattleFramework extends Phaser.Scene
         this.battleBox = this.add.sprite(720, 592, 'battle_box')
             .setScale(2)
 
+        this.battleBoxPhys = this.physics.add.staticGroup()
+
+            this.battleBoxPhys.create(532, 528, 'battle_box_lr').setScale(2).body.updateFromGameObject(), 
+            this.battleBoxPhys.create(908, 528, 'battle_box_lr').setScale(2).body.updateFromGameObject(),
+            this.battleBoxPhys.create(720, 340, 'battle_box_tb').setScale(2).body.updateFromGameObject(),
+            this.battleBoxPhys.create(720, 716, 'battle_box_tb').setScale(2).body.updateFromGameObject(),
+
+        this.battleBoxPhys.setVisible(false)
+
+        this.physics.add.collider(this.player, this.battleBoxPhys);
         this.hpbar = this.add.sprite(720, 754, 'hpbar')
         this.hptext = this.add.text(784, 738, '20 / 20', { fontFamily: '"Trebuchet MS"', fontSize: '32px'})
         this.add.text(624, 738, 'HP', { fontFamily: '"Trebuchet MS"', fontSize: '32px'})
@@ -170,10 +186,13 @@ export default class BattleFramework extends Phaser.Scene
                 }else if(keyZ.isDown)
                 {
                     this.pressReset = false;
+                    if(this.currentButton != 3 || this.numItems > 0) //Fire as long as you aren't entering the item menu with no items
+                    {
                     this.controlType = 'menu2'
                     this.menuOptionCols = true;
                     this.menuOptionRows = true;
                     this.generateMenu()
+                    }
                 }
             }else if(this.cursors.left.isUp && this.cursors.right.isUp && keyZ.isUp && keyX.isUp)
             {
@@ -250,7 +269,6 @@ export default class BattleFramework extends Phaser.Scene
                     this.pressReset = false;
 
                     this.controlType = 'freemove'
-                    this.player.setPosition(720, 450)
 
                     if(this.currentButton == 1)
                     {
@@ -281,77 +299,77 @@ export default class BattleFramework extends Phaser.Scene
             }
             if(this.menuOptionCols == true && this.menuOptionRows == true && this.menuOptionOverload > 0)
             {
-                this.menuOptionOne.setVisible(0)
-                this.menuOptionTwo.setVisible(1)
-                this.menuOptionThree.setVisible(1)
-                this.menuOptionFour.setVisible(1)
+                this.menuOptions[0].setVisible(0)
+                this.menuOptions[1].setVisible(1)
+                this.menuOptions[2].setVisible(1)
+                this.menuOptions[3].setVisible(1)
 
-                this.player.setPosition(this.menuOptionOne.x, this.menuOptionOne.y);
+                this.player.setPosition(this.menuOptions[0].x, this.menuOptions[0].y);
 
                 switch(this.currentButton)
                 {
                     case 2: //If on act button
-                        this.playerSelectedOption = this.actOneText
+                        this.playerSelectedOption = this.actsText[0]
                         break;
                     case 3: //If on item button
-                        this.playerSelectedOption = this.itemOneText
+                        this.playerSelectedOption = this.itemsText[0]
                         break;
                 }
 
             }else if(this.menuOptionCols == true && this.menuOptionRows == false && this.menuOptionOverload > 1)
             {
-                this.menuOptionOne.setVisible(1)
-                this.menuOptionTwo.setVisible(0)
-                this.menuOptionThree.setVisible(1)
-                this.menuOptionFour.setVisible(1)
+                this.menuOptions[0].setVisible(1)
+                this.menuOptions[1].setVisible(0)
+                this.menuOptions[2].setVisible(1)
+                this.menuOptions[3].setVisible(1)
 
-                this.player.setPosition(this.menuOptionTwo.x, this.menuOptionTwo.y);
+                this.player.setPosition(this.menuOptions[1].x, this.menuOptions[1].y);
 
                 switch(this.currentButton)
                 {
                     case 2: //If on act button
-                        this.playerSelectedOption = this.actTwoText
+                        this.playerSelectedOption = this.actsText[1]
                         break;
                     case 3: //If on item button
-                        this.playerSelectedOption = this.itemTwoText
+                        this.playerSelectedOption = this.itemsText[1]
                         break;
                 }
 
             }else if(this.menuOptionCols == false && this.menuOptionRows == true  && this.menuOptionOverload > 2)
             {
-                this.menuOptionOne.setVisible(1)
-                this.menuOptionTwo.setVisible(1)
-                this.menuOptionThree.setVisible(0)
-                this.menuOptionFour.setVisible(1)
+                this.menuOptions[0].setVisible(1)
+                this.menuOptions[1].setVisible(1)
+                this.menuOptions[2].setVisible(0)
+                this.menuOptions[3].setVisible(1)
 
-                this.player.setPosition(this.menuOptionThree.x, this.menuOptionThree.y);
+                this.player.setPosition(this.menuOptions[2].x, this.menuOptions[2].y);
 
                 switch(this.currentButton)
                 {
                     case 2: //If on act button
-                        this.playerSelectedOption = this.actThreeText
+                        this.playerSelectedOption = this.actsText[2]
                         break;
                     case 3: //If on item button
-                        this.playerSelectedOption = this.itemThreeText
+                        this.playerSelectedOption = this.itemsText[2]
                         break;
                 }
 
             }else if(this.menuOptionCols == false && this.menuOptionRows == false  && this.menuOptionOverload > 3)
             {
-                this.menuOptionOne.setVisible(1)
-                this.menuOptionTwo.setVisible(1)
-                this.menuOptionThree.setVisible(1)
-                this.menuOptionFour.setVisible(0)
+                this.menuOptions[0].setVisible(1)
+                this.menuOptions[1].setVisible(1)
+                this.menuOptions[2].setVisible(1)
+                this.menuOptions[3].setVisible(0)
 
-                this.player.setPosition(this.menuOptionFour.x, this.menuOptionFour.y);
+                this.player.setPosition(this.menuOptions[3].x, this.menuOptions[3].y);
 
                 switch(this.currentButton)
                 {
                     case 2: //If on act button
-                        this.playerSelectedOption = this.actFourText
+                        this.playerSelectedOption = this.actsText[3]
                         break;
                     case 3: //If on item button
-                        this.playerSelectedOption = this.itemFourText
+                        this.playerSelectedOption = this.itemsText[3]
                         break;
                 }
             }
@@ -362,47 +380,68 @@ export default class BattleFramework extends Phaser.Scene
         this.clearMenu()
         if(this.controlType == 'menu1')
         {
+            this.player.setVelocity(0, 0)
+            this.battleBox.setVisible(true)
+            this.battleBoxPhys.setVisible(false)
             //Flavour text stuff
-            this.flavourText = this.add.text(320, 520, this.generateFlavourText('SAMPLE', 0), { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
+            this.flavourText = this.add.text(320, 504, this.generateFlavourText('SAMPLE', 0), { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
         }else if(this.controlType == 'menu2')
         {
+            this.battleBox.setVisible(true)
+            this.battleBoxPhys.setVisible(false)
             if(this.currentButton == 2)//Act button
             {
-                this.menuOptionOne = this.add.sprite(320, 520, 'star');
-                this.textOne = this.add.text(352, 504, this.actOneText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
-                this.menuOptionTwo = this.add.sprite(320, 648, 'star');
-                this.textTwo = this.add.text(352, 632, this.actTwoText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
-                this.menuOptionThree = this.add.sprite(736, 520, 'star');
-                this.textThree = this.add.text(768, 504, this.actThreeText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
-                this.menuOptionFour = this.add.sprite(736, 648, 'star');
-                this.textFour = this.add.text(768, 632, this.actFourText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
+                this.menuOptions = [
+                    this.add.sprite(320, 520, 'star'), 
+                    this.add.sprite(320, 648, 'star'),
+                    this.add.sprite(736, 520, 'star'),
+                    this.add.sprite(736, 648, 'star')
+                ]
+                this.textOptions = [
+                    this.add.text(352, 504, this.actsText[0], { fontFamily: '"Trebuchet MS"', fontSize: '32px'}),
+                    this.add.text(352, 632, this.actsText[1], { fontFamily: '"Trebuchet MS"', fontSize: '32px'}),
+                    this.add.text(768, 504, this.actsText[2], { fontFamily: '"Trebuchet MS"', fontSize: '32px'}),
+                    this.add.text(768, 632, this.actsText[3], { fontFamily: '"Trebuchet MS"', fontSize: '32px'}),
+                ]
+                
             }else if(this.currentButton == 3)//Item button
             {
-                this.menuOptionOne = this.add.sprite(320, 520, 'star');
-                this.textOne = this.add.text(352, 504, this.itemOneText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
-                this.menuOptionTwo = this.add.sprite(320, 648, 'star');
-                this.textTwo = this.add.text(352, 632, this.itemTwoText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
-                this.menuOptionThree = this.add.sprite(736, 520, 'star');
-                this.textThree = this.add.text(768, 504, this.itemThreeText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
-                this.menuOptionFour = this.add.sprite(736, 648, 'star');
-                this.textFour = this.add.text(768, 632, this.itemFourText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
+                this.menuOptions[0] = this.add.sprite(320, 520, 'star');
+                this.textOptions[0] = this.add.text(352, 504, this.itemsText[0], { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
+                if(this.itemsText[1]){
+                    this.menuOptions[1] = this.add.sprite(320, 648, 'star')
+                    this.textOptions[1] = this.add.text(352, 632, this.itemsText[1], { fontFamily: '"Trebuchet MS"', fontSize: '32px'})
+                }
+                if(this.itemsText[2]){
+                    this.menuOptions[2] = this.add.sprite(736, 520, 'star')
+                    this.textOptions[2] = this.add.text(768, 504, this.itemsText[2], { fontFamily: '"Trebuchet MS"', fontSize: '32px'})
+                }
+                if(this.itemsText[3]){
+                    this.menuOptions[3] = this.add.sprite(736, 648, 'star')
+                    this.textOptions[3] = this.add.text(768, 632, this.itemsText[3], { fontFamily: '"Trebuchet MS"', fontSize: '32px'})
+                }
             }else if(this.currentButton == 4)//Mercy button
             {
-                this.menuOptionOne = this.add.sprite(320, 520, 'star');
-                this.textOne = this.add.text(352, 504, "Spare", { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
+                this.menuOptions[0] = this.add.sprite(320, 520, 'star');
+                this.textOptions[0] = this.add.text(352, 504, "Spare", { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
             }
+        }else if(this.controlType == 'freemove')
+        {
+            this.battleBox.setVisible(false)
+            this.battleBoxPhys.setVisible(true)
+            this.player.setPosition(720, 534);
         }
     }
     clearMenu()
     {
-        this.menuOptionOne.destroy()
-        this.menuOptionTwo.destroy()
-        this.menuOptionThree.destroy()
-        this.menuOptionFour.destroy()
-        this.textOne.destroy()
-        this.textTwo.destroy()
-        this.textThree.destroy()
-        this.textFour.destroy()
+        this.menuOptions[0].destroy()
+        this.menuOptions[1].destroy()
+        this.menuOptions[2].destroy()
+        this.menuOptions[3].destroy()
+        this.textOptions[0].destroy()
+        this.textOptions[1].destroy()
+        this.textOptions[2].destroy()
+        this.textOptions[3].destroy()
         this.flavourText.destroy()
 
         console.log(this.controlType);
@@ -411,6 +450,21 @@ export default class BattleFramework extends Phaser.Scene
     {
         this.currentPlayerHP = this.currentPlayerHP - 3;
         console.log(this.currentPlayerHP)
+
+        this.updateHealth()
+    
+        this.bulletOverlap.active = false
+        this.time.addEvent({
+            delay: 1250,
+            callback: ()=>{
+                this.bulletOverlap.active = true
+            },
+            loop: false
+        });
+    }
+
+    updateHealth()
+    {
         var hpPercent = this.currentPlayerHP / this.totalPlayerHP
         if(hpPercent == 1){
             this.hpbar.setFrame(0)
@@ -426,12 +480,12 @@ export default class BattleFramework extends Phaser.Scene
             this.hpbar.setFrame(5)
         }else if(hpPercent >= 0.250){
             this.hpbar.setFrame(6)
-        }else if(hpPercent <= 0){
+        }else if(hpPercent >= 0.125){
             this.hpbar.setFrame(7)
+        }else if(hpPercent <= 0){
+            this.hpbar.setFrame(8)
         }
 
         this.hptext.setText(`${this.currentPlayerHP} / 20`)
-    
-        this.bulletOverlap.destroy()
     }
 }
