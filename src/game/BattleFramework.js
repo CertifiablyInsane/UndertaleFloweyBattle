@@ -13,15 +13,15 @@ export default class BattleFramework extends Phaser.Scene
     {
         this.cursors = this.input.keyboard.createCursorKeys()
         this.load.image('player', 'assets/soul.png');
-        this.load.image('battle_box', 'assets/battle_box.png');
-        this.load.image('battle_box_lr', 'assets/battle_box_lr.png');
-        this.load.image('battle_box_tb', 'assets/battle_box_tb.png');
-        this.load.image('star', 'assets/star.png');
-        this.load.spritesheet('battle_buttons', 'assets/battle_buttons.png', 
+        this.load.image('battle_box', 'assets/ui/battle_box.png');
+        this.load.image('battle_box_lr', 'assets/ui/battle_box_lr.png');
+        this.load.image('battle_box_tb', 'assets/ui/battle_box_tb.png');
+        this.load.image('star', 'assets/ui/star.png');
+        this.load.spritesheet('battle_buttons', 'assets/ui/battle_buttons.png', 
         {
             frameWidth: 448, frameHeight: 192,
         });
-        this.load.spritesheet('hpbar', 'assets/hpbar.png', 
+        this.load.spritesheet('hpbar', 'assets/ui/hpbar.png', 
         {
             frameWidth: 64, frameHeight: 64,
         });
@@ -33,7 +33,7 @@ export default class BattleFramework extends Phaser.Scene
             this.add.sprite(0, 0, null), 
             this.add.sprite(0, 0, null),
             this.add.sprite(0, 0, null),
-            this.add.sprite(736, 648, 'star')
+            this.add.sprite(0, 0, null)
         ]
         this.textOptions = [
             this.add.text(0, 0, null),
@@ -55,8 +55,8 @@ export default class BattleFramework extends Phaser.Scene
         Calling this.destroy() doesn't work unless I establish what type of object the variable is.
         This is normally fine, but it causes issues when I don't establish the object type for menu options with less than four options
         (example MERCY)
-        therefore, I must establish and then immediate delete all the variables on initiation so that the engine does cry like an infant
-        when I try to delete a non existant variable.
+        therefore, I must establish and then immediate delete all the variables on initiation so that 
+        the engine doesn't scream like a banshee when I try to delete a non existant variable.
 
         By the way, I did look into the @type {Phaser.whatever you put here} thing but I found no luck.
         
@@ -129,6 +129,8 @@ export default class BattleFramework extends Phaser.Scene
 
     update()
     {
+        //var pos = [this.player.x, this.player.y]
+        //console.log(pos)
         const playerSpeed = 256;
 
         const keyZ = this.input.keyboard.addKey('Z');
@@ -429,7 +431,14 @@ export default class BattleFramework extends Phaser.Scene
         {
             this.battleBox.setVisible(false)
             this.battleBoxPhys.setVisible(true)
-            this.player.setPosition(720, 534);
+            this.time.addEvent({ //adds slight delay to setPosition so that any movements called in Update() don't override this.
+                delay: 1,
+                callback: ()=>{
+                    this.player.setPosition(720, 534);
+                },
+                loop: false
+            });
+            
         }
     }
     clearMenu()

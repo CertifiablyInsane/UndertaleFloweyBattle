@@ -18,6 +18,10 @@ export default class Battle extends BattleFramework
     preload()
     {
         super.preload()
+        this.load.spritesheet('bullet_cirlce', 'assets/battle/bullet_circle.png', 
+        {
+            frameWidth: 32, frameHeight: 32,
+        });
     }
 
     create()
@@ -35,6 +39,23 @@ export default class Battle extends BattleFramework
 
         this.bullets = this.physics.add.group()
         this.bulletOverlap = this.physics.add.overlap(this.player, this.bullets,this.onDamaged,()=>true,this)
+
+        //ANIM
+        this.anims.generateFrameNames('bullet_circle')
+        this.anims.create({
+            key: 'idle',
+            frames: [
+                { key: 'bullet_circle',frame:0 },
+                { key: 'bullet_circle',frame:1 },
+                { key: 'bullet_circle',frame:2 },
+                { key: 'bullet_circle',frame:1 },
+            ],
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.test = this.physics.add.sprite(256, 256, 'bullet_circle');
+        this.test.anims.play('idle')
     }
 
     update()
@@ -46,7 +67,7 @@ export default class Battle extends BattleFramework
     {
         console.log("fight")
         this.fightButton.setFrame(0);
-        this.monsterAttack()
+        this.monsterAttack('generic', 5000)
     }
 
     doAct(selectedAction)
@@ -54,7 +75,7 @@ export default class Battle extends BattleFramework
         this.clearMenu()
         console.log(selectedAction)
         this.actButton.setFrame(2);
-        this.monsterAttack()
+        this.monsterAttack('generic', 5000)
     }
 
     doItem(selectedItem)
@@ -85,7 +106,7 @@ export default class Battle extends BattleFramework
         this.numItems--
         this.itemsText.splice(this.itemsText.indexOf(selectedItem), 1); //remove item from array
         this.updateHealth()
-        this.monsterAttack()
+        this.monsterAttack('generic', 5000)
     }
 
     doMercy()
@@ -97,19 +118,49 @@ export default class Battle extends BattleFramework
         {
             //spare
         }
-        //this.monsterAttack()
+        this.monsterAttack('generic', 5000)
     }
 
-    monsterAttack(attackParam)
+    monsterAttack(attackParam, length)
     {
         this.generateMenu()
-        this.bullet = this.bullets.create(758, 256, 'player')
-        this.bullet = this.bullets.create(256, 256, 'player')
+        //this.bullet = this.bullets.create(758, 256, 'player')
+        if(attackParam == 'generic')
+        {
+            var rndNum = Phaser.Math.Between(0, 0);
+            console.log(rndNum)
+            switch(rndNum)
+            {
+                case 0:
+                    attackParam = 'rain'
+                    break;
+                case 1:
+                    attackParam = 'horizcross'
+                    break;
+                case 2:
+                    attackParam = 'shooter'
+                    break;
+            }
+        }
+        
+        console.log(attackParam)
+        switch(attackParam)
+        {
+            case 'rain':
+                    this.bullet = this.bullets.create(720, 320, 'bullet_circle')
+                    this.bullets.playAnimation('idle')
+                    
+                break;
+            
+            case 'finale':
+                break;
+        }
+        
         this.bulletOverlap.active = true
 
         //Attack phase over
         this.time.addEvent({
-            delay: 5000,
+            delay: length,
             callback: ()=>{
                 this.bullets.clear(true, true);
                 this.controlType = 'menu1'
