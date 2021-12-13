@@ -12,11 +12,14 @@ export default class BattleFramework extends Phaser.Scene
     preload()
     {
         this.cursors = this.input.keyboard.createCursorKeys()
-        this.load.image('player', 'assets/soul.png');
         this.load.image('battle_box', 'assets/ui/battle_box.png');
         this.load.image('battle_box_lr', 'assets/ui/battle_box_lr.png');
         this.load.image('battle_box_tb', 'assets/ui/battle_box_tb.png');
         this.load.image('star', 'assets/ui/star.png');
+        this.load.spritesheet('player', 'assets/soul.png', 
+        {
+            frameWidth: 64, frameHeight: 64
+        });
         this.load.spritesheet('battle_buttons', 'assets/ui/battle_buttons.png', 
         {
             frameWidth: 448, frameHeight: 192,
@@ -67,7 +70,6 @@ export default class BattleFramework extends Phaser.Scene
 
     create()
     {
-        console.log('Framework loaded');
 
         //////////////////
         ////GLOBAL VARS///
@@ -125,6 +127,26 @@ export default class BattleFramework extends Phaser.Scene
         //////////////////
         ////ANIMATIONS////
         //////////////////
+
+        this.anims.generateFrameNames('player')
+        this.anims.create({
+            key: 'hurt',
+            frames: [
+                { key: 'player',frame:1 },
+                { key: 'player',frame:0 },
+            ],
+            frameRate: 4,
+            repeat: 4
+        });
+        this.anims.create({
+            key: 'dead',
+            frames: [
+                { key: 'player',frame:2 },
+            ],
+            frameRate: 4,
+            repeat: -1
+        });
+
     }
 
     update()
@@ -453,7 +475,6 @@ export default class BattleFramework extends Phaser.Scene
         this.textOptions[3].destroy()
         this.flavourText.destroy()
 
-        console.log(this.controlType);
     }
     onDamaged()
     {
@@ -462,6 +483,8 @@ export default class BattleFramework extends Phaser.Scene
 
         this.updateHealth()
     
+        this.player.anims.play('hurt')
+
         this.bulletOverlap.active = false
         this.time.addEvent({
             delay: 1250,
@@ -493,8 +516,13 @@ export default class BattleFramework extends Phaser.Scene
             this.hpbar.setFrame(7)
         }else if(hpPercent <= 0){
             this.hpbar.setFrame(8)
+            this.playerDead()
         }
 
         this.hptext.setText(`${this.currentPlayerHP} / 20`)
+    }
+    playerDead()
+    {
+        this.player.anims.play('dead')
     }
 }

@@ -18,7 +18,7 @@ export default class Battle extends BattleFramework
     preload()
     {
         super.preload()
-        this.load.spritesheet('bullet_cirlce', 'assets/battle/bullet_circle.png', 
+        this.load.spritesheet('bullet_circle', 'assets/battle/bullet_circle.png', 
         {
             frameWidth: 32, frameHeight: 32,
         });
@@ -53,9 +53,6 @@ export default class Battle extends BattleFramework
             frameRate: 8,
             repeat: -1
         });
-
-        this.test = this.physics.add.sprite(256, 256, 'bullet_circle');
-        this.test.anims.play('idle')
     }
 
     update()
@@ -127,7 +124,7 @@ export default class Battle extends BattleFramework
         //this.bullet = this.bullets.create(758, 256, 'player')
         if(attackParam == 'generic')
         {
-            var rndNum = Phaser.Math.Between(0, 0);
+            var rndNum = Phaser.Math.Between(0, 2);
             console.log(rndNum)
             switch(rndNum)
             {
@@ -147,11 +144,73 @@ export default class Battle extends BattleFramework
         switch(attackParam)
         {
             case 'rain':
-                    this.bullet = this.bullets.create(720, 320, 'bullet_circle')
-                    this.bullets.playAnimation('idle')
+                this.bulletMaker = this.time.addEvent({
+                    delay: 250,
+                    callback: ()=>{
+                        var spawn = Phaser.Math.Between(512, 938);
+                        var destination = Phaser.Math.Between(512, 938);
+                        this.bullet = this.physics.add.sprite(spawn, 256, 'bullet_circle')
+                            .setBodySize(16, 16)
+                            .anims.play('idle')
+                        
+                        this.bullets.add(this.bullet)
+                        this.physics.moveTo(this.bullet, destination, 720, undefined, 2000)
+                        
+                    },
+                    loop: true
+                });
                     
                 break;
-            
+            case 'horizcross':
+                this.bulletMaker = this.time.addEvent({
+                    delay: 300,
+                    callback: ()=>{
+                        var spawn = Phaser.Math.Between(348, 708);
+                        var side = Phaser.Math.Between(0, 1);
+                        var destination
+                        if(side == 0){
+                            side = 448
+                            destination = 1002
+                        }else{
+                            side = 1002
+                            destination = 448
+                        }
+                        this.bullet = this.physics.add.sprite(side, spawn, 'bullet_circle')
+                            .setScale(1.5)
+                            .setBodySize(20, 20)
+                            .anims.play('idle')
+                        
+                        this.bullets.add(this.bullet)
+                        this.physics.moveTo(this.bullet, destination, spawn, undefined, 1750)
+                        
+                    },
+                    loop: true
+                });
+                break;
+            case 'shooter':
+                this.bulletLooper = this.time.addEvent({
+                    delay: 2000,
+                    startAt: 2500,
+                    callback: ()=>{
+                        this.bulletMaker = this.time.addEvent({
+                            delay: 75,
+                            callback: ()=>{
+                                this.bullet = this.physics.add.sprite(720, 256, 'bullet_circle')
+                                    .setScale(1)
+                                    .setBodySize(16, 16)
+                                    .anims.play('idle')
+                                
+                                this.bullets.add(this.bullet)
+                                this.physics.moveTo(this.bullet, this.player.x, this.player.y, 384)
+                                
+                            },
+                            repeat: 12
+                        });
+                    },
+                    loop: true
+                })
+                break;
+
             case 'finale':
                 break;
         }
@@ -162,10 +221,16 @@ export default class Battle extends BattleFramework
         this.time.addEvent({
             delay: length,
             callback: ()=>{
-                this.bullets.clear(true, true);
                 this.controlType = 'menu1'
                 this.generateMenu()
+
+                //disable all attack related stuffs
+                this.bullets.clear(true, true);
                 this.bulletOverlap.active = false
+                this.bulletMaker.remove()
+                if(attackParam == 'shooter'){
+                    this.bulletLooper.remove()
+                }
             },
             loop: false
         });
