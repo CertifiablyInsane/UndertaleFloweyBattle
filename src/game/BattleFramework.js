@@ -84,6 +84,9 @@ export default class BattleFramework extends Phaser.Scene
         this.totalPlayerHP = 20;
         this.currentPlayerHP = 20;
 
+        this.keyZ = this.input.keyboard.addKey('Z');
+        this.keyX = this.input.keyboard.addKey('X');
+
         //////////////////
         //SCENE CREATION//
         //////////////////
@@ -155,8 +158,6 @@ export default class BattleFramework extends Phaser.Scene
         //console.log(pos)
         const playerSpeed = 256;
 
-        const keyZ = this.input.keyboard.addKey('Z');
-        const keyX = this.input.keyboard.addKey('X');
         //FREEMOVE CONTROLS
         if(this.controlType == 'freemove')
         {
@@ -207,7 +208,7 @@ export default class BattleFramework extends Phaser.Scene
                     if(this.currentButton == 5){
                         this.currentButton = 1
                     }
-                }else if(keyZ.isDown)
+                }else if(this.keyZ.isDown)
                 {
                     this.pressReset = false;
                     if(this.currentButton != 3 || this.numItems > 0) //Fire as long as you aren't entering the item menu with no items
@@ -218,7 +219,7 @@ export default class BattleFramework extends Phaser.Scene
                     this.generateMenu()
                     }
                 }
-            }else if(this.cursors.left.isUp && this.cursors.right.isUp && keyZ.isUp && keyX.isUp)
+            }else if(this.cursors.left.isUp && this.cursors.right.isUp && this.keyZ.isUp && this.keyX.isUp)
             {
                 this.pressReset = true;
             }
@@ -288,7 +289,7 @@ export default class BattleFramework extends Phaser.Scene
                             this.menuOptionRows = true
                         }
                     }
-                if(keyZ.isDown)
+                if(this.keyZ.isDown)
                 {
                     this.pressReset = false;
 
@@ -312,12 +313,12 @@ export default class BattleFramework extends Phaser.Scene
 
                     }
                 }
-                if(keyX.isDown)//Return
+                if(this.keyX.isDown)//Return
                 {
                     this.controlType = 'menu1';
                     this.generateMenu();
                 }
-            }else if(this.cursors.left.isUp && this.cursors.right.isUp && this.cursors.up.isUp && this.cursors.down.isUp && keyZ.isUp && keyX.isUp)
+            }else if(this.cursors.left.isUp && this.cursors.right.isUp && this.cursors.up.isUp && this.cursors.down.isUp && this.keyZ.isUp && this.keyX.isUp)
             {
                 this.pressReset = true;
             }
@@ -398,6 +399,22 @@ export default class BattleFramework extends Phaser.Scene
                 }
             }
         }
+        /*
+        if(this.controlType == 'text')
+        {
+            if(this.pressReset == true)
+            {
+                if(this.keyZ.isDown)
+                {
+                    this.pressReset = false
+                    console.log('continue')
+                }
+            }else if(this.keyZ.isUp)
+            {
+                this.pressReset = true
+            }
+        }
+        */
     }
     generateMenu()
     {
@@ -520,6 +537,30 @@ export default class BattleFramework extends Phaser.Scene
         }
 
         this.hptext.setText(`${this.currentPlayerHP} / 20`)
+    }
+
+    textSequence(firstText, secondText)
+    {
+        this.clearMenu()
+        this.player.setVisible(false)
+        this.flavourText = this.add.text(320, 504, firstText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
+        let continueKey = this.keyZ.on('down', ()=>{
+            if(secondText != null)
+            {
+                continueKey.destroy()
+                this.clearMenu()
+                this.flavourText = this.add.text(320, 504, secondText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
+                let continueKey2 = this.keyZ.on('down', ()=>{
+                    continueKey2.destroy()
+                    this.player.setVisible(true)
+                    this.monsterAttack('generic', 5000)
+                })
+            }else{
+                this.player.setVisible(true)
+                this.monsterAttack('generic', 5000)
+            }
+        })
+        
     }
     playerDead()
     {

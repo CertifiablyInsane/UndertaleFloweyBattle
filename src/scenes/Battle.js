@@ -35,7 +35,8 @@ export default class Battle extends BattleFramework
 
         this.monsterIsSpareable = false;
         this.monsterHP = 300;
-        this.monsterStage = 0
+        this.monsterPhase = 0
+        this.monsterPhaseMod = 0
 
         this.bullets = this.physics.add.group()
         this.bulletOverlap = this.physics.add.overlap(this.player, this.bullets,this.onDamaged,()=>true,this)
@@ -72,15 +73,17 @@ export default class Battle extends BattleFramework
         this.clearMenu()
         console.log(selectedAction)
         this.actButton.setFrame(2);
-        this.monsterAttack('generic', 5000)
+        const generatedText = this.generateFlavourText('ACT', selectedAction)
+        this.textSequence(generatedText[0], generatedText[1]);
     }
 
     doItem(selectedItem)
     {
         this.clearMenu()
         this.itemButton.setFrame(4);
-        this.flavourText = this.add.text(320, 520, this.generateFlavourText('USED_ITEM', selectedItem), { fontFamily: '"Trebuchet MS"', fontSize: '32px'})
-        console.log(selectedItem)
+        const generatedText = this.generateFlavourText('USED_ITEM', selectedItem)
+        this.textSequence(generatedText[0], generatedText[1]);
+
         //ITEM EFFECTS
         switch(selectedItem)
         {
@@ -103,7 +106,6 @@ export default class Battle extends BattleFramework
         this.numItems--
         this.itemsText.splice(this.itemsText.indexOf(selectedItem), 1); //remove item from array
         this.updateHealth()
-        this.monsterAttack('generic', 5000)
     }
 
     doMercy()
@@ -121,6 +123,10 @@ export default class Battle extends BattleFramework
     monsterAttack(attackParam, length)
     {
         this.generateMenu()
+
+        console.log('MONSTER PHASE: ' + this.monsterPhase);
+        console.log('MONSTER PHASE MOD: ' + this.monsterPhaseMod);
+
         //this.bullet = this.bullets.create(758, 256, 'player')
         if(attackParam == 'generic')
         {
@@ -189,11 +195,11 @@ export default class Battle extends BattleFramework
                 break;
             case 'shooter':
                 this.bulletLooper = this.time.addEvent({
-                    delay: 2000,
-                    startAt: 2500,
+                    delay: 1000,
+                    startAt: 900,
                     callback: ()=>{
                         this.bulletMaker = this.time.addEvent({
-                            delay: 75,
+                            delay: 40,
                             callback: ()=>{
                                 this.bullet = this.physics.add.sprite(720, 256, 'bullet_circle')
                                     .setScale(1)
@@ -204,7 +210,7 @@ export default class Battle extends BattleFramework
                                 this.physics.moveTo(this.bullet, this.player.x, this.player.y, 384)
                                 
                             },
-                            repeat: 12
+                            repeat: 16
                         });
                     },
                     loop: true
@@ -222,6 +228,7 @@ export default class Battle extends BattleFramework
             delay: length,
             callback: ()=>{
                 this.controlType = 'menu1'
+                this.monsterPhaseMod++
                 this.generateMenu()
 
                 //disable all attack related stuffs
@@ -238,7 +245,7 @@ export default class Battle extends BattleFramework
 
     generateFlavourText(categoryParam, textParam)
     {
-        var returnText;
+        var returnText = [null, null];
         if(categoryParam == 'SAMPLE')
         {
             switch(textParam)
@@ -253,21 +260,34 @@ export default class Battle extends BattleFramework
                     returnText = 'You feel like sample text'
             }
         }
+        if(categoryParam == 'ACT')
+        {
+            switch(textParam)
+            {
+                case 'Check':
+                    returnText[0] = '[TEMP MONSTER] - ATK 6 DEF 13 \nThis foe is a fan of magic orbs'
+                break;
+            }
+        }
         if(categoryParam == 'USED_ITEM')
         {
             switch(textParam)
             {
                 case 'KromerBurger':
-                    returnText = 'You ate the KromerBurger!'
+                    returnText[0] = 'You ate the KromerBurger!'
+                    returnText[1] = 'Tastes... interesting. Recovered 15 HP!'
                     break;
                 case 'ClubsSandwich':
-                    returnText = 'You ate the ClubsSandwich'
+                    returnText[0] = 'You ate the ClubsSandwich'
+                    returnText[1] = 'Tastes like a sweaty casino. Recovered 11 HP!'
                     break;
                 case 'Pie':
-                    returnText = 'You ate the Pie!'
+                    returnText[0] = 'You ate the Pie!'
+                    returnText[1] = 'Tastes like snails. Recovered 20 HP!'
                     break;
                 case 'MonsterCandy':
-                    returnText = 'You ate the MonsterCandy!'
+                    returnText[0] = 'You ate the MonsterCandy!'
+                    returnText[1] = 'Tastes awful. Recovered 7 HP!'
                     break;
             }
         }
