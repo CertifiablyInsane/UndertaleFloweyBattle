@@ -1,5 +1,13 @@
+@font-face {
+    font-family: Determination;
+    src: url(./assets/Determination.ttf);
+}
+h1 {
+    font-family: Determination;
+    font-size: 0;
+}
 #game {
-    border: 16px solid white;
+    border: 1px solid white;
     width: 1440px;
     height: 900px;
     margin: auto;

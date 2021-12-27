@@ -103,6 +103,7 @@ export default class Battle extends BattleFramework
         if(this.currentPlayerHP > 20){
             this.currentPlayerHP = 20
         }
+        this.snd_heal.play()
         this.numItems--
         this.itemsText.splice(this.itemsText.indexOf(selectedItem), 1); //remove item from array
         this.updateHealth()

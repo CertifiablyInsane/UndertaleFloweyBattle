@@ -12,9 +12,11 @@ export default class BattleFramework extends Phaser.Scene
     preload()
     {
         this.cursors = this.input.keyboard.createCursorKeys()
+        this.load.image('background', 'assets/background.png');
         this.load.image('battle_box', 'assets/ui/battle_box.png');
         this.load.image('battle_box_lr', 'assets/ui/battle_box_lr.png');
         this.load.image('battle_box_tb', 'assets/ui/battle_box_tb.png');
+        this.load.image('test', '/assets/ui/battle_box_tb.png')
         this.load.image('star', 'assets/ui/star.png');
         this.load.spritesheet('player', 'assets/soul.png', 
         {
@@ -28,6 +30,16 @@ export default class BattleFramework extends Phaser.Scene
         {
             frameWidth: 64, frameHeight: 64,
         });
+
+        //SOUND
+
+        this.load.audio('hurt', 'assets/snd/battle/snd_hurt1.wav')
+
+        this.load.audio('select1', 'assets/snd/menu/snd_select1.wav')
+        this.load.audio('select2', 'assets/snd/menu/snd_select2.wav')
+        this.load.audio('heal', 'assets/snd/menu/snd_heal.wav')
+        this.load.audio('swing', 'assets/snd/menu/snd_swing.wav')
+        this.load.audio('damage', 'assets/snd/menu/snd_damage.wav')
     }
 
     init()
@@ -51,15 +63,15 @@ export default class BattleFramework extends Phaser.Scene
         /*
         Dear Mr. Wilson,
 
-        If you are reading this, then I never figured out how to find a better way than this utter stupidity.
+        If you are reading this, then I never figured out how to find a better way than this silliness.
 
-        Let me explain myself.
+        Allow me to explain myself.
 
         Calling this.destroy() doesn't work unless I establish what type of object the variable is.
         This is normally fine, but it causes issues when I don't establish the object type for menu options with less than four options
         (example MERCY)
         therefore, I must establish and then immediate delete all the variables on initiation so that 
-        the engine doesn't scream like a banshee when I try to delete a non existant variable.
+        the engine cry like a toddler when I try to delete a non existant variable.
 
         By the way, I did look into the @type {Phaser.whatever you put here} thing but I found no luck.
         
@@ -90,6 +102,9 @@ export default class BattleFramework extends Phaser.Scene
         //////////////////
         //SCENE CREATION//
         //////////////////
+
+        this.add.image(720, 450, 'background');
+
         this.player = this.physics.add.sprite(896, 560, 'player')
             .setCollideWorldBounds(true)
             .setDepth(1)
@@ -109,7 +124,7 @@ export default class BattleFramework extends Phaser.Scene
             .setScale(0.5)
             .setFrame(6)
 
-        this.battleBox = this.add.sprite(720, 592, 'battle_box')
+        this.battleBox = this.add.sprite(720, 612, 'battle_box')
             .setScale(2)
 
         this.battleBoxPhys = this.physics.add.staticGroup()
@@ -122,9 +137,10 @@ export default class BattleFramework extends Phaser.Scene
         this.battleBoxPhys.setVisible(false)
 
         this.physics.add.collider(this.player, this.battleBoxPhys);
-        this.hpbar = this.add.sprite(720, 754, 'hpbar')
-        this.hptext = this.add.text(784, 738, '20 / 20', { fontFamily: '"Trebuchet MS"', fontSize: '32px'})
-        this.add.text(624, 738, 'HP', { fontFamily: '"Trebuchet MS"', fontSize: '32px'})
+        this.hpbar = this.add.sprite(720, 766, 'hpbar')
+        this.hptext = this.add.text(784, 746, '20 / 20', { fontFamily: 'Determination', fontSize: '40px'})
+        this.add.text(624, 746, 'HP', { fontFamily: 'Determination', fontSize: '40px'})
+        this.add.text(384, 746, 'LV 1', { fontFamily: 'Determination', fontSize: '40px'})
 
         this.generateMenu()
         //////////////////
@@ -149,6 +165,17 @@ export default class BattleFramework extends Phaser.Scene
             frameRate: 4,
             repeat: -1
         });
+
+        //////////////////
+        ///////SOUND//////
+        //////////////////
+        this.snd_select1 = this.sound.add('select1', { volume: 0.6, loop: false, });
+        this.snd_select2 = this.sound.add('select2', { volume: 0.6, loop: false, });
+        this.snd_heal = this.sound.add('heal', { volume: 0.8, loop: false, });
+        this.snd_swing = this.sound.add('swing', { volume: 0.6, loop: false, });
+        this.snd_damage = this.sound.add('damage', { volume: 0.8, loop: false, });
+
+        this.snd_hurt = this.sound.add('hurt', { volume: 0.6, loop: false, });
 
     }
 
@@ -197,6 +224,7 @@ export default class BattleFramework extends Phaser.Scene
                 if(this.cursors.left.isDown)
                 {
                     this.pressReset = false;
+                    this.snd_select1.play()
                     this.currentButton--;
                     if(this.currentButton == 0){
                         this.currentButton = 4
@@ -204,6 +232,7 @@ export default class BattleFramework extends Phaser.Scene
                 }else if(this.cursors.right.isDown)
                 {
                     this.pressReset = false;
+                    this.snd_select1.play()
                     this.currentButton++;
                     if(this.currentButton == 5){
                         this.currentButton = 1
@@ -213,6 +242,7 @@ export default class BattleFramework extends Phaser.Scene
                     this.pressReset = false;
                     if(this.currentButton != 3 || this.numItems > 0) //Fire as long as you aren't entering the item menu with no items
                     {
+                    this.snd_select2.play()
                     this.controlType = 'menu2'
                     this.menuOptionCols = true;
                     this.menuOptionRows = true;
@@ -274,6 +304,7 @@ export default class BattleFramework extends Phaser.Scene
                     if(this.cursors.left.isDown || this.cursors.right.isDown)
                     {
                         this.pressReset = false;
+                        this.snd_select1.play()
                         if(this.menuOptionCols == true){
                             this.menuOptionCols = false
                         }else{
@@ -283,6 +314,7 @@ export default class BattleFramework extends Phaser.Scene
                 if(this.cursors.up.isDown || this.cursors.down.isDown)
                     {
                         this.pressReset = false;
+                        this.snd_select1.play()
                         if(this.menuOptionRows == true){
                             this.menuOptionRows = false
                         }else{
@@ -292,7 +324,7 @@ export default class BattleFramework extends Phaser.Scene
                 if(this.keyZ.isDown)
                 {
                     this.pressReset = false;
-
+                    this.snd_select2.play()
                     this.controlType = 'freemove'
 
                     if(this.currentButton == 1)
@@ -425,7 +457,7 @@ export default class BattleFramework extends Phaser.Scene
             this.battleBox.setVisible(true)
             this.battleBoxPhys.setVisible(false)
             //Flavour text stuff
-            this.flavourText = this.add.text(320, 504, this.generateFlavourText('SAMPLE', 0), { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
+            this.flavourText = this.add.text(320, 524, this.generateFlavourText('SAMPLE', 0), { fontFamily: 'Determination', fontSize: '40px'});
         }else if(this.controlType == 'menu2')
         {
             this.battleBox.setVisible(true)
@@ -433,38 +465,36 @@ export default class BattleFramework extends Phaser.Scene
             if(this.currentButton == 2)//Act button
             {
                 this.menuOptions = [
-                    this.add.sprite(320, 520, 'star'), 
-                    this.add.sprite(320, 648, 'star'),
-                    this.add.sprite(736, 520, 'star'),
-                    this.add.sprite(736, 648, 'star')
+                    this.add.sprite(320, 540, 'star'), 
+                    this.add.sprite(320, 668, 'star'),
+                    this.add.sprite(736, 540, 'star'),
+                    this.add.sprite(736, 668, 'star')
                 ]
                 this.textOptions = [
-                    this.add.text(352, 504, this.actsText[0], { fontFamily: '"Trebuchet MS"', fontSize: '32px'}),
-                    this.add.text(352, 632, this.actsText[1], { fontFamily: '"Trebuchet MS"', fontSize: '32px'}),
-                    this.add.text(768, 504, this.actsText[2], { fontFamily: '"Trebuchet MS"', fontSize: '32px'}),
-                    this.add.text(768, 632, this.actsText[3], { fontFamily: '"Trebuchet MS"', fontSize: '32px'}),
+                    this.add.text(352, 522, this.actsText[0], { fontFamily: 'Determination', fontSize: '40px'}),
+                    this.add.text(352, 650, this.actsText[1], { fontFamily: 'Determination', fontSize: '40px'}),
+                    this.add.text(768, 522, this.actsText[2], { fontFamily: 'Determination', fontSize: '40px'}),
+                    this.add.text(768, 650, this.actsText[3], { fontFamily: 'Determination', fontSize: '40px'}),
                 ]
                 
             }else if(this.currentButton == 3)//Item button
             {
-                this.menuOptions[0] = this.add.sprite(320, 520, 'star');
-                this.textOptions[0] = this.add.text(352, 504, this.itemsText[0], { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
-                if(this.itemsText[1]){
-                    this.menuOptions[1] = this.add.sprite(320, 648, 'star')
-                    this.textOptions[1] = this.add.text(352, 632, this.itemsText[1], { fontFamily: '"Trebuchet MS"', fontSize: '32px'})
-                }
-                if(this.itemsText[2]){
-                    this.menuOptions[2] = this.add.sprite(736, 520, 'star')
-                    this.textOptions[2] = this.add.text(768, 504, this.itemsText[2], { fontFamily: '"Trebuchet MS"', fontSize: '32px'})
-                }
-                if(this.itemsText[3]){
-                    this.menuOptions[3] = this.add.sprite(736, 648, 'star')
-                    this.textOptions[3] = this.add.text(768, 632, this.itemsText[3], { fontFamily: '"Trebuchet MS"', fontSize: '32px'})
-                }
+                this.menuOptions = [
+                    this.add.sprite(320, 540, 'star'), 
+                    this.add.sprite(320, 668, 'star'),
+                    this.add.sprite(736, 540, 'star'),
+                    this.add.sprite(736, 668, 'star')
+                ]
+                this.textOptions = [
+                    this.add.text(352, 522, this.itemsText[0], { fontFamily: 'Determination', fontSize: '40px'}),
+                    this.add.text(352, 650, this.itemsText[1], { fontFamily: 'Determination', fontSize: '40px'}),
+                    this.add.text(768, 522, this.itemsText[2], { fontFamily: 'Determination', fontSize: '40px'}),
+                    this.add.text(768, 650, this.itemsText[3], { fontFamily: 'Determination', fontSize: '40px'}),
+                ]
             }else if(this.currentButton == 4)//Mercy button
             {
-                this.menuOptions[0] = this.add.sprite(320, 520, 'star');
-                this.textOptions[0] = this.add.text(352, 504, "Spare", { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
+                this.menuOptions[0] = this.add.sprite(320, 540, 'star');
+                this.textOptions[0] = this.add.text(352, 522, "Spare", { fontFamily: 'Determination', fontSize: '40px'});
             }
         }else if(this.controlType == 'freemove')
         {
@@ -501,6 +531,7 @@ export default class BattleFramework extends Phaser.Scene
         this.updateHealth()
     
         this.player.anims.play('hurt')
+        this.snd_hurt.play()
 
         this.bulletOverlap.active = false
         this.time.addEvent({
@@ -543,19 +574,20 @@ export default class BattleFramework extends Phaser.Scene
     {
         this.clearMenu()
         this.player.setVisible(false)
-        this.flavourText = this.add.text(320, 504, firstText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
+        this.flavourText = this.add.text(320, 524, firstText, { fontFamily: 'Determination', fontSize: '40px'});
         let continueKey = this.keyZ.on('down', ()=>{
             if(secondText != null)
             {
                 continueKey.destroy()
                 this.clearMenu()
-                this.flavourText = this.add.text(320, 504, secondText, { fontFamily: '"Trebuchet MS"', fontSize: '32px'});
+                this.flavourText = this.add.text(320, 524, secondText, { fontFamily: 'Determination', fontSize: '40px'});
                 let continueKey2 = this.keyZ.on('down', ()=>{
                     continueKey2.destroy()
                     this.player.setVisible(true)
                     this.monsterAttack('generic', 5000)
                 })
             }else{
+                continueKey.destroy()
                 this.player.setVisible(true)
                 this.monsterAttack('generic', 5000)
             }
@@ -564,6 +596,6 @@ export default class BattleFramework extends Phaser.Scene
     }
     playerDead()
     {
-        this.player.anims.play('dead')
+        this.scene.start('Dead')
     }
 }
