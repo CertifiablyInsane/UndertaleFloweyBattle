@@ -16,8 +16,8 @@ export default class BattleFramework extends Phaser.Scene
         this.load.image('battle_box', 'assets/ui/battle_box.png');
         this.load.image('battle_box_lr', 'assets/ui/battle_box_lr.png');
         this.load.image('battle_box_tb', 'assets/ui/battle_box_tb.png');
-        this.load.image('test', '/assets/ui/battle_box_tb.png')
         this.load.image('star', 'assets/ui/star.png');
+        this.load.image('text_box', 'assets/ui/text_box.png');
         this.load.spritesheet('player', 'assets/soul.png', 
         {
             frameWidth: 64, frameHeight: 64
@@ -181,8 +181,6 @@ export default class BattleFramework extends Phaser.Scene
 
     update()
     {
-        //var pos = [this.player.x, this.player.y]
-        //console.log(pos)
         const playerSpeed = 256;
 
         //FREEMOVE CONTROLS
@@ -325,7 +323,6 @@ export default class BattleFramework extends Phaser.Scene
                 {
                     this.pressReset = false;
                     this.snd_select2.play()
-                    this.controlType = 'freemove'
 
                     if(this.currentButton == 1)
                     {
@@ -431,22 +428,6 @@ export default class BattleFramework extends Phaser.Scene
                 }
             }
         }
-        /*
-        if(this.controlType == 'text')
-        {
-            if(this.pressReset == true)
-            {
-                if(this.keyZ.isDown)
-                {
-                    this.pressReset = false
-                    console.log('continue')
-                }
-            }else if(this.keyZ.isUp)
-            {
-                this.pressReset = true
-            }
-        }
-        */
     }
     generateMenu()
     {
@@ -457,11 +438,10 @@ export default class BattleFramework extends Phaser.Scene
             this.battleBox.setVisible(true)
             this.battleBoxPhys.setVisible(false)
             //Flavour text stuff
-            this.flavourText = this.add.text(320, 524, this.generateFlavourText('SAMPLE', 0), { fontFamily: 'Determination', fontSize: '40px'});
+            this.flavourText = this.add.text(320, 524, this.generateText('SAMPLE', 0), { fontFamily: 'Determination', fontSize: '40px'});
         }else if(this.controlType == 'menu2')
         {
             this.battleBox.setVisible(true)
-            this.battleBoxPhys.setVisible(false)
             if(this.currentButton == 2)//Act button
             {
                 this.menuOptions = [
@@ -500,14 +480,6 @@ export default class BattleFramework extends Phaser.Scene
         {
             this.battleBox.setVisible(false)
             this.battleBoxPhys.setVisible(true)
-            this.time.addEvent({ //adds slight delay to setPosition so that any movements called in Update() don't override this.
-                delay: 1,
-                callback: ()=>{
-                    this.player.setPosition(720, 534);
-                },
-                loop: false
-            });
-            
         }
     }
     clearMenu()
@@ -525,6 +497,7 @@ export default class BattleFramework extends Phaser.Scene
     }
     onDamaged()
     {
+        this.killPlayer()
         this.currentPlayerHP = this.currentPlayerHP - 3;
         console.log(this.currentPlayerHP)
 
@@ -564,7 +537,7 @@ export default class BattleFramework extends Phaser.Scene
             this.hpbar.setFrame(7)
         }else if(hpPercent <= 0){
             this.hpbar.setFrame(8)
-            this.playerDead()
+            this.killPlayer();
         }
 
         this.hptext.setText(`${this.currentPlayerHP} / 20`)
@@ -572,30 +545,84 @@ export default class BattleFramework extends Phaser.Scene
 
     textSequence(firstText, secondText)
     {
+        this.controlType = 'nocontrol'
         this.clearMenu()
         this.player.setVisible(false)
-        this.flavourText = this.add.text(320, 524, firstText, { fontFamily: 'Determination', fontSize: '40px'});
-        let continueKey = this.keyZ.on('down', ()=>{
-            if(secondText != null)
-            {
-                continueKey.destroy()
-                this.clearMenu()
-                this.flavourText = this.add.text(320, 524, secondText, { fontFamily: 'Determination', fontSize: '40px'});
-                let continueKey2 = this.keyZ.on('down', ()=>{
-                    continueKey2.destroy()
-                    this.player.setVisible(true)
-                    this.monsterAttack('generic', 5000)
-                })
-            }else{
-                continueKey.destroy()
-                this.player.setVisible(true)
-                this.monsterAttack('generic', 5000)
-            }
-        })
+        if(firstText != null)
+        {
+            this.flavourText = this.add.text(320, 524, firstText, { fontFamily: 'Determination', fontSize: '40px'});
+            let continueKey = this.keyZ.on('down', ()=>{
+                if(secondText != null)
+                {
+                    continueKey.destroy()
+                    this.clearMenu()
+                    this.flavourText = this.add.text(320, 524, secondText, { fontFamily: 'Determination', fontSize: '40px'});
+                    continueKey = this.keyZ.on('down', ()=>{
+                        continueKey.destroy()
+                        this.monsterSpeak(this.monsterStage)
+                    })
+                }else{
+                    continueKey.destroy()
+                    this.monsterSpeak(this.monsterStage)
+                }
+            })
+        }else{
+            this.monsterSpeak(this.monsterStage)
+        }
         
     }
-    playerDead()
+    monsterSpeak(param)
     {
-        this.scene.start('Dead')
+        this.clearMenu()
+        this.battleBox.setVisible(false)
+        const generatedText = this.generateText('FLOWEY_DIALOGUE', param)
+        if(generatedText[0])
+        {
+            var dialogue = generatedText[0].split(' | ') //dialogue[0] = emotion context, dialogue[1] = text
+            this.flowey.play(dialogue[0])
+            let textbox = this.add.sprite(1088, 320, 'text_box')
+            let text = this.add.text(940, 256, dialogue[1], { fontFamily: 'Determination', fontSize: '32px', color: 'Black'})
+            let continueKey = this.keyZ.on('down', ()=>{
+                continueKey.destroy()
+                if(generatedText[1])
+                {
+                    dialogue = generatedText[1].split(' | ')
+                    this.flowey.play(dialogue[0])
+                    text.destroy()
+                    text = this.add.text(940, 256, dialogue[1], { fontFamily: 'Determination', fontSize: '32px', color: 'Black'})
+                    continueKey = this.keyZ.on('down', ()=>{
+                        continueKey.destroy()
+                        if(generatedText[2])
+                        {
+                            dialogue = generatedText[2].split(' | ')
+                            this.flowey.play(dialogue[0])
+                            text.destroy()
+                            text = this.add.text(940, 256, dialogue[1], { fontFamily: 'Determination', fontSize: '32px', color: 'Black'})
+                            continueKey = this.keyZ.on('down', ()=>{
+                                continueKey.destroy()
+
+                                text.destroy()
+                                textbox.destroy()
+                                this.monsterAttack('generic', 5000)
+                            })
+                        }else{
+                            text.destroy()
+                            textbox.destroy()
+                            this.monsterAttack('generic', 5000)
+                        }
+
+                    })
+                }else{
+                    text.destroy()
+                    textbox.destroy()
+                    this.monsterAttack('generic', 5000)
+                }
+            })
+        }else{
+            text.destroy()
+            textbox.destroy()
+            this.monsterAttack('generic', 5000)
+        }
+        
     }
 }

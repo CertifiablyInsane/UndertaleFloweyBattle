@@ -7,7 +7,7 @@ export default new Phaser.Game({
     type: Phaser.CANVAS,
     width: 1440,
     height: 900,
-    scene: [Dead, Battle],
+    scene: [Battle, Dead],
     physics: {
         default: 'arcade',
         arcade: {
