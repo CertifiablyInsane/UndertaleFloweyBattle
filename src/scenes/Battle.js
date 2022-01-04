@@ -26,6 +26,9 @@ export default class Battle extends BattleFramework
         {
             frameWidth: 256, frameHeight: 256,
         });
+        this.load.audio('floweytalk1', 'assets/snd/misc/floweytalk1.wav')
+        this.load.audio('floweytalk2', 'assets/snd/misc/floweytalk2.wav')
+        this.load.audio('floweylaugh', 'assets/snd/misc/floweylaugh.wav')
     }
 
     create()
@@ -43,7 +46,11 @@ export default class Battle extends BattleFramework
         this.bulletOverlap = this.physics.add.overlap(this.player, this.bullets,this.onDamaged,()=>true,this)
 
         this.flowey = this.add.sprite(720, 256, 'flowey')
-        .setScale(1.5)
+        .setScale(1.25)
+
+        this.snd_floweytalk1 = this.sound.add('floweytalk1', { volume: 0.6, loop: false, });
+        this.snd_floweytalk2 = this.sound.add('floweytalk2', { volume: 0.6, loop: false, });
+        this.snd_floweylaugh = this.sound.add('floweylaugh', { volume: 0.8, loop: false, });
 
         //ANIM
         this.anims.generateFrameNames('bullet_circle')
@@ -288,11 +295,12 @@ export default class Battle extends BattleFramework
 
     monsterAttack(attackParam, length)
     {
-        this.flowey.play('disappear')
         this.controlType = 'freemove'
         this.generateMenu()
         this.player.setPosition(720, 534);
         this.player.setVisible(true)
+
+        this.setBoxSize('square')
                 
         if(attackParam == 'generic')
         {
@@ -385,6 +393,14 @@ export default class Battle extends BattleFramework
             }
                 
             this.bulletOverlap.active = true
+
+            this.tweens.add({
+                targets: this.boxhelper,
+                props: {
+                    scaleX: { value: 1, duration: 300, ease: 'Linear' },
+                    scaleY: { value: 1, duration: 100, ease: 'Linear' },
+                },
+            });
         
             //Attack phase over
             this.time.addEvent({
@@ -397,7 +413,6 @@ export default class Battle extends BattleFramework
                     this.bullets.clear(true, true);
                     this.bulletOverlap.active = false
                     this.bulletMaker.remove()
-                    this.flowey.play('appear')
                     this.monsterStage++; //Increment monster stage
                     if(attackParam == 'shooter'){
                         this.bulletLooper.remove()

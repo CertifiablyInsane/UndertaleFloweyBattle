@@ -13,7 +13,9 @@ export default class BattleFramework extends Phaser.Scene
     {
         this.cursors = this.input.keyboard.createCursorKeys()
         this.load.image('background', 'assets/background.png');
+        this.load.image('box_helper', 'assets/ui/box_helper.png');
         this.load.image('battle_box', 'assets/ui/battle_box.png');
+        this.load.image('battle_box_2', 'assets/ui/battle_box_2.png');
         this.load.image('battle_box_lr', 'assets/ui/battle_box_lr.png');
         this.load.image('battle_box_tb', 'assets/ui/battle_box_tb.png');
         this.load.image('star', 'assets/ui/star.png');
@@ -32,6 +34,7 @@ export default class BattleFramework extends Phaser.Scene
         });
 
         //SOUND
+        this.load.audio('mus_flowey', 'assets/snd/music/mus_flowey.mp3')
 
         this.load.audio('hurt', 'assets/snd/battle/snd_hurt1.wav')
 
@@ -108,8 +111,9 @@ export default class BattleFramework extends Phaser.Scene
         this.player = this.physics.add.sprite(896, 560, 'player')
             .setCollideWorldBounds(true)
             .setDepth(1)
+            .setScale(0.75)
 
-        this.player.body.setSize(40, 40, true)
+            this.player.body.setSize(40, 40, true)
 
         this.fightButton = this.add.sprite(288, 836, 'battle_buttons')
             .setScale(0.5)
@@ -124,19 +128,22 @@ export default class BattleFramework extends Phaser.Scene
             .setScale(0.5)
             .setFrame(6)
 
-        this.battleBox = this.add.sprite(720, 612, 'battle_box')
-            .setScale(2)
+        this.boxhelper = this.add.sprite(720, 612, 'box_helper')
+            .setVisible(false)
+        this.boxEdges = [
+            this.physics.add.staticSprite(590, 612, 'battle_box_lr'), //592 - 2 for origin
+            this.physics.add.staticSprite(850, 612, 'battle_box_lr'),
+            this.physics.add.staticSprite(720, 482, 'battle_box_tb'), //480 + 2
+            this.physics.add.staticSprite(720, 742, 'battle_box_tb'),
+        ]
+        /*
+        this.boxL = this.add.sprite(590, 612, 'battle_box_lr') //592 - 2 for origin
+        this.boxR = this.add.sprite(850, 612, 'battle_box_lr')
+        this.boxT = this.add.sprite(720, 482, 'battle_box_tb') //480 + 2
+        this.boxB = this.add.sprite(720, 742, 'battle_box_tb')
+        */
+       this.physics.add.collider(this.player, this.boxEdges)
 
-        this.battleBoxPhys = this.physics.add.staticGroup()
-
-            this.battleBoxPhys.create(532, 528, 'battle_box_lr').setScale(2).body.updateFromGameObject(), 
-            this.battleBoxPhys.create(908, 528, 'battle_box_lr').setScale(2).body.updateFromGameObject(),
-            this.battleBoxPhys.create(720, 340, 'battle_box_tb').setScale(2).body.updateFromGameObject(),
-            this.battleBoxPhys.create(720, 716, 'battle_box_tb').setScale(2).body.updateFromGameObject(),
-
-        this.battleBoxPhys.setVisible(false)
-
-        this.physics.add.collider(this.player, this.battleBoxPhys);
         this.hpbar = this.add.sprite(720, 766, 'hpbar')
         this.hptext = this.add.text(784, 746, '20 / 20', { fontFamily: 'Determination', fontSize: '40px'})
         this.add.text(624, 746, 'HP', { fontFamily: 'Determination', fontSize: '40px'})
@@ -176,6 +183,10 @@ export default class BattleFramework extends Phaser.Scene
         this.snd_damage = this.sound.add('damage', { volume: 0.8, loop: false, });
 
         this.snd_hurt = this.sound.add('hurt', { volume: 0.6, loop: false, });
+
+        this.mus_flowey = this.sound.add('mus_flowey', { volume: 0.7, loop: true, });
+
+        this.mus_flowey.play()
 
     }
 
@@ -435,13 +446,13 @@ export default class BattleFramework extends Phaser.Scene
         if(this.controlType == 'menu1')
         {
             this.player.setVelocity(0, 0)
-            this.battleBox.setVisible(true)
-            this.battleBoxPhys.setVisible(false)
+            
+            this.setBoxSize('text')
+            
             //Flavour text stuff
             this.flavourText = this.add.text(320, 524, this.generateText('SAMPLE', 0), { fontFamily: 'Determination', fontSize: '40px'});
         }else if(this.controlType == 'menu2')
         {
-            this.battleBox.setVisible(true)
             if(this.currentButton == 2)//Act button
             {
                 this.menuOptions = [
@@ -478,8 +489,6 @@ export default class BattleFramework extends Phaser.Scene
             }
         }else if(this.controlType == 'freemove')
         {
-            this.battleBox.setVisible(false)
-            this.battleBoxPhys.setVisible(true)
         }
     }
     clearMenu()
@@ -497,7 +506,6 @@ export default class BattleFramework extends Phaser.Scene
     }
     onDamaged()
     {
-        this.killPlayer()
         this.currentPlayerHP = this.currentPlayerHP - 3;
         console.log(this.currentPlayerHP)
 
@@ -574,7 +582,6 @@ export default class BattleFramework extends Phaser.Scene
     monsterSpeak(param)
     {
         this.clearMenu()
-        this.battleBox.setVisible(false)
         const generatedText = this.generateText('FLOWEY_DIALOGUE', param)
         if(generatedText[0])
         {
@@ -624,5 +631,94 @@ export default class BattleFramework extends Phaser.Scene
             this.monsterAttack('generic', 5000)
         }
         
+    }
+    setBoxSize(param)
+    {
+        switch(param)
+        {
+            case 'text':
+                this.tweens.add({
+                    targets: this.boxhelper,
+                    props: {
+                        scaleX: { value: 4.25, duration: 300, ease: 'Linear' },
+                        scaleY: {value: 1, duration: 100, ease: 'Linear'},
+                    },
+                });
+                this.tweens.add({
+                    targets: this.boxEdges[0],
+                    props: {
+                        x: { value: 178, duration: 300, ease: 'Linear' },
+                        scaleY: {value: 1, duration: 100, ease: 'Linear'},
+                    },
+                });
+                this.tweens.add({
+                    targets: this.boxEdges[1],
+                    props: {
+                        x: { value: 1262, duration: 300, ease: 'Linear' },
+                        scaleY: {value: 1, duration: 100, ease: 'Linear'},
+                    },
+                });
+                this.tweens.add({
+                    targets: this.boxEdges[2],
+                    props: {
+                        scaleX: { value: 4.25, duration: 300, ease: 'Linear' },
+                        y: { value: 486, duration: 100, ease: 'Linear' },
+                    },
+                });
+                this.tweens.add({
+                    targets: this.boxEdges[3],
+                    props: {
+                        scaleX: { value: 4.25, duration: 300, ease: 'Linear' },
+                        y: { value: 738, duration: 100, ease: 'Linear' },
+                    },
+                });
+            break;
+            case 'square':
+                this.tweens.add({
+                    targets: this.boxhelper,
+                    props: {
+                        scaleX: { value: 1, duration: 300, ease: 'Linear' },
+                        scaleY: {value: 1, duration: 100, ease: 'Linear'},
+                    },
+                });
+                this.tweens.add({
+                    targets: this.boxEdges[0],
+                    props: {
+                        x: { value: 594, duration: 300, ease: 'Linear' },
+                        scaleY: {value: 1, duration: 100, ease: 'Linear'},
+                    },
+                });
+                this.tweens.add({
+                    targets: this.boxEdges[1],
+                    props: {
+                        x: { value: 846, duration: 300, ease: 'Linear' },
+                        scaleY: {value: 1, duration: 100, ease: 'Linear'},
+                    },
+                });
+                this.tweens.add({
+                    targets: this.boxEdges[2],
+                    props: {
+                        scaleX: { value: 1, duration: 300, ease: 'Linear' },
+                        y: { value: 486, duration: 100, ease: 'Linear' },
+                    },
+                });
+                this.tweens.add({
+                    targets: this.boxEdges[3],
+                    props: {
+                        scaleX: { value: 1, duration: 300, ease: 'Linear' },
+                        y: { value: 738, duration: 100, ease: 'Linear' },
+                    },
+                });
+            break;
+        }
+            this.time.addEvent({
+                delay: 350,
+                callback: ()=>{
+                    this.boxEdges[0].body.updateFromGameObject()
+                    this.boxEdges[1].body.updateFromGameObject()
+                    this.boxEdges[2].body.updateFromGameObject()
+                    this.boxEdges[3].body.updateFromGameObject()
+                }
+            })
     }
 }
