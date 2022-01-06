@@ -26,17 +26,17 @@ export default class Battle extends BattleFramework
         {
             frameWidth: 256, frameHeight: 256,
         });
-        this.load.audio('floweytalk1', 'assets/snd/misc/floweytalk1.wav')
-        this.load.audio('floweytalk2', 'assets/snd/misc/floweytalk2.wav')
-        this.load.audio('floweylaugh', 'assets/snd/misc/floweylaugh.wav')
+        this.load.audio('floweytalk1', 'assets/snd/misc/snd_floweytalk1.wav')
+        this.load.audio('floweytalk2', 'assets/snd/misc/snd_floweytalk2.wav')
+        this.load.audio('floweylaugh', 'assets/snd/misc/snd_floweylaugh.wav')
     }
 
     create()
     {
         super.create()
-        this.actsText = ['Check', 'Talk', 'Deal', 'Negotiate']
+        this.actsText = ['Check', 'Talk', 'Plead', 'Cry']
 
-        this.itemsText = ['KromerBurger', 'ClubsSandwich', 'Pie', 'MonsterCandy']
+        this.itemsText = ['KromerBar', 'AstroFood', 'Pie', 'MonsterCandy']
 
         this.numItems = 4
 
@@ -236,8 +236,46 @@ export default class Battle extends BattleFramework
     doFight()
     {
         console.log("fight")
+        this.clearMenu()
+        this.player.setVisible(false)
         this.fightButton.setFrame(0);
-        this.textSequence(null, null)
+        let fightbar = this.add.sprite(720, 612, 'fightbar')
+            .setScale(2)
+        let fightbar_indicator = this.physics.add.sprite(192, 612, 'fightbar_indicator');
+        this.physics.moveTo(fightbar_indicator, 1262, 612, undefined, 1500)
+        let missTimer = this.time.addEvent({
+            delay: 1500,
+            callback: ()=>{
+                fightbar_indicator.destroy()
+                fightbar.destroy()
+                this.monsterSpeak(this.monsterStage)
+            }
+        })
+        let fightKey = this.keyZ.on('down', ()=>{
+            fightKey.destroy()
+            missTimer.destroy()
+            fightbar_indicator.setVelocity(0)
+            fightbar_indicator.play('hit')
+            this.snd_swing.play()
+            let slash = this.add.sprite(720, 256, 'slash')
+            slash.play('swing')
+            this.flowey.play('disappear')
+            this.time.addEvent({
+                delay: 1500,
+                callback: ()=>{
+                    this.flowey.play('appear')
+                    this.time.addEvent({
+                        delay: 500,
+                        callback: ()=>{
+                            fightbar_indicator.destroy()
+                            fightbar.destroy()
+                            slash.destroy()
+                            this.monsterSpeak(this.monsterStage)
+                        }
+                    })
+                }
+            })
+        })   
     }
 
     doAct(selectedAction)
@@ -299,8 +337,6 @@ export default class Battle extends BattleFramework
         this.generateMenu()
         this.player.setPosition(720, 534);
         this.player.setVisible(true)
-
-        this.setBoxSize('square')
                 
         if(attackParam == 'generic')
         {
@@ -324,6 +360,7 @@ export default class Battle extends BattleFramework
         switch(attackParam)
         {
             case 'rain':
+                this.setBoxSize('square')
                 this.bulletMaker = this.time.addEvent({
                     delay: 250,
                     callback: ()=>{
@@ -342,6 +379,7 @@ export default class Battle extends BattleFramework
                             
                 break;
             case 'horizcross':
+                this.setBoxSize('square')
                 this.bulletMaker = this.time.addEvent({
                     delay: 300,
                     callback: ()=>{
@@ -368,6 +406,7 @@ export default class Battle extends BattleFramework
                     });
                     break;
             case 'shooter':
+                this.setBoxSize('square')
                 this.bulletLooper = this.time.addEvent({
                     delay: 1000,
                     startAt: 900,
@@ -444,7 +483,20 @@ export default class Battle extends BattleFramework
             switch(textParam)
             {
                 case 'Check':
-                    returnText[0] = '[TEMP MONSTER] - ATK 6 DEF 13 \nThis foe is a fan of magic orbs'
+                    returnText[0] = 'Flowey - ATK 6 DEF 0 \nA tiny little flower.\nExceptionally cruel.'
+                break;
+                case 'Talk':
+                    returnText[0] = 'You try to talk to Flowey.'
+                    returnText[1] = `He doesn't seem keen on chatting.`
+                break;
+                case 'Plead':
+                    returnText[0] = 'You beg Flowey to stop attacking.'
+                    returnText[1] = 'Did you really think that would\ndo anything?'
+                break;
+                case 'Cry':
+                    this.flowey.play('evil')
+                    returnText[0] = 'You lie on your back and break\ndown into tears.'
+                    returnText[1] = 'Flowey seems pleased by this.'
                 break;
             }
         }
@@ -452,21 +504,21 @@ export default class Battle extends BattleFramework
         {
             switch(textParam)
             {
-                case 'KromerBurger':
-                    returnText[0] = 'You ate the KromerBurger!'
-                    returnText[1] = 'Tastes... interesting. Recovered 15 HP!'
+                case 'KromerBar':
+                    returnText[0] = 'You ate the KromerBar!'
+                    returnText[1] = 'Tastes like a scam.\nRecovered 15 HP!'
                     break;
-                case 'ClubsSandwich':
-                    returnText[0] = 'You ate the ClubsSandwich'
-                    returnText[1] = 'Tastes like a sweaty casino. Recovered 11 HP!'
+                case 'AstroFood':
+                    returnText[0] = 'You ate the AstroFood'
+                    returnText[1] = 'Tastes cold and lonely.\nRecovered 11 HP!'
                     break;
                 case 'Pie':
                     returnText[0] = 'You ate the Pie!'
-                    returnText[1] = 'Tastes like snails. Recovered 20 HP!'
+                    returnText[1] = 'Tastes like snails.\nRecovered 20 HP!'
                     break;
                 case 'MonsterCandy':
                     returnText[0] = 'You ate the MonsterCandy!'
-                    returnText[1] = 'Tastes awful. Recovered 7 HP!'
+                    returnText[1] = 'Tastes like rotting teeth.\nRecovered 7 HP!'
                     break;
             }
         }

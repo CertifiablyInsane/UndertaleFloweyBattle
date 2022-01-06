@@ -14,8 +14,7 @@ export default class BattleFramework extends Phaser.Scene
         this.cursors = this.input.keyboard.createCursorKeys()
         this.load.image('background', 'assets/background.png');
         this.load.image('box_helper', 'assets/ui/box_helper.png');
-        this.load.image('battle_box', 'assets/ui/battle_box.png');
-        this.load.image('battle_box_2', 'assets/ui/battle_box_2.png');
+        this.load.image('fightbar', 'assets/ui/fightbar.png');
         this.load.image('battle_box_lr', 'assets/ui/battle_box_lr.png');
         this.load.image('battle_box_tb', 'assets/ui/battle_box_tb.png');
         this.load.image('star', 'assets/ui/star.png');
@@ -32,6 +31,14 @@ export default class BattleFramework extends Phaser.Scene
         {
             frameWidth: 64, frameHeight: 64,
         });
+        this.load.spritesheet('slash', 'assets/ui/slash.png', 
+        {
+            frameWidth: 128, frameHeight: 128,
+        });
+        this.load.spritesheet('fightbar_indicator', 'assets/ui/fightbar_indicator.png',
+        {
+            frameWidth: 16, frameHeight: 248,
+        });
 
         //SOUND
         this.load.audio('mus_flowey', 'assets/snd/music/mus_flowey.mp3')
@@ -43,6 +50,7 @@ export default class BattleFramework extends Phaser.Scene
         this.load.audio('heal', 'assets/snd/menu/snd_heal.wav')
         this.load.audio('swing', 'assets/snd/menu/snd_swing.wav')
         this.load.audio('damage', 'assets/snd/menu/snd_damage.wav')
+        this.load.audio('text', 'assets/snd/menu/snd_text.wav')
     }
 
     init()
@@ -60,6 +68,9 @@ export default class BattleFramework extends Phaser.Scene
             this.add.text(0, 0, null),
         ]
         this.flavourText = this.add.text(0, 0, null);
+        this.monsterText = this.add.text(0, 0, null)
+        this.star = this.add.sprite(0, 0, null)
+        this.fightbar = this.add.sprite(0, 0, null)
     
         this.clearMenu()
 
@@ -147,7 +158,8 @@ export default class BattleFramework extends Phaser.Scene
         this.hpbar = this.add.sprite(720, 766, 'hpbar')
         this.hptext = this.add.text(784, 746, '20 / 20', { fontFamily: 'Determination', fontSize: '40px'})
         this.add.text(624, 746, 'HP', { fontFamily: 'Determination', fontSize: '40px'})
-        this.add.text(384, 746, 'LV 1', { fontFamily: 'Determination', fontSize: '40px'})
+        this.add.text(320, 746, 'LV 1', { fontFamily: 'Determination', fontSize: '40px'})
+        this.add.text(174, 746, 'CHARA', { fontFamily: 'Determination', fontSize: '40px'})
 
         this.generateMenu()
         //////////////////
@@ -172,6 +184,29 @@ export default class BattleFramework extends Phaser.Scene
             frameRate: 4,
             repeat: -1
         });
+        this.anims.generateFrameNames('fightbar_indicator')
+        this.anims.create({
+            key: 'hit',
+            frames: [
+                { key: 'fightbar_indicator',frame:1 },
+                { key: 'fightbar_indicator',frame:0 },
+            ],
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.generateFrameNames('slash')
+        this.anims.create({
+            key: 'swing',
+            frames: [
+                { key: 'slash',frame:0 },
+                { key: 'slash',frame:1 },
+                { key: 'slash',frame:2 },
+                { key: 'slash',frame:3 },
+                { key: 'slash',frame:4 },
+            ],
+            frameRate: 4,
+            repeat: 0
+        });
 
         //////////////////
         ///////SOUND//////
@@ -183,16 +218,17 @@ export default class BattleFramework extends Phaser.Scene
         this.snd_damage = this.sound.add('damage', { volume: 0.8, loop: false, });
 
         this.snd_hurt = this.sound.add('hurt', { volume: 0.6, loop: false, });
-
+        
+        this.snd_text = this.sound.add('text', { volume: 0.6, loop: false, });
         this.mus_flowey = this.sound.add('mus_flowey', { volume: 0.7, loop: true, });
 
-        this.mus_flowey.play()
+        //this.mus_flowey.play()
 
     }
 
     update()
     {
-        const playerSpeed = 256;
+        const playerSpeed = 200;
 
         //FREEMOVE CONTROLS
         if(this.controlType == 'freemove')
@@ -251,11 +287,12 @@ export default class BattleFramework extends Phaser.Scene
                     this.pressReset = false;
                     if(this.currentButton != 3 || this.numItems > 0) //Fire as long as you aren't entering the item menu with no items
                     {
-                    this.snd_select2.play()
-                    this.controlType = 'menu2'
-                    this.menuOptionCols = true;
-                    this.menuOptionRows = true;
-                    this.generateMenu()
+                        this.snd_select2.play()
+                        this.flavourText_looper.destroy()
+                        this.controlType = 'menu2'
+                        this.menuOptionCols = true;
+                        this.menuOptionRows = true;
+                        this.generateMenu()
                     }
                 }
             }else if(this.cursors.left.isUp && this.cursors.right.isUp && this.keyZ.isUp && this.keyX.isUp)
@@ -272,7 +309,7 @@ export default class BattleFramework extends Phaser.Scene
 
                     this.player.setPosition(this.fightButton.x - 80, this.fightButton.y); //set new player pos
 
-                    this.menuOptionOverload = 0 //set number of menu options
+                    this.menuOptionOverload = 1 //set number of menu options
                     break;
                 case 2:
                     this.actButton.setFrame(3); //set new active
@@ -337,6 +374,7 @@ export default class BattleFramework extends Phaser.Scene
 
                     if(this.currentButton == 1)
                     {
+                        this.controlType = 'noControl'
                         this.doFight()
                     }else if(this.currentButton == 2)
                     {
@@ -364,12 +402,7 @@ export default class BattleFramework extends Phaser.Scene
             }
             if(this.menuOptionCols == true && this.menuOptionRows == true && this.menuOptionOverload > 0)
             {
-                this.menuOptions[0].setVisible(0)
-                this.menuOptions[1].setVisible(1)
-                this.menuOptions[2].setVisible(1)
-                this.menuOptions[3].setVisible(1)
-
-                this.player.setPosition(this.menuOptions[0].x, this.menuOptions[0].y);
+                this.player.setPosition(this.menuOptions[0].x - 64, this.menuOptions[0].y);
 
                 switch(this.currentButton)
                 {
@@ -383,12 +416,7 @@ export default class BattleFramework extends Phaser.Scene
 
             }else if(this.menuOptionCols == true && this.menuOptionRows == false && this.menuOptionOverload > 1)
             {
-                this.menuOptions[0].setVisible(1)
-                this.menuOptions[1].setVisible(0)
-                this.menuOptions[2].setVisible(1)
-                this.menuOptions[3].setVisible(1)
-
-                this.player.setPosition(this.menuOptions[1].x, this.menuOptions[1].y);
+                this.player.setPosition(this.menuOptions[1].x - 64, this.menuOptions[1].y);
 
                 switch(this.currentButton)
                 {
@@ -402,12 +430,7 @@ export default class BattleFramework extends Phaser.Scene
 
             }else if(this.menuOptionCols == false && this.menuOptionRows == true  && this.menuOptionOverload > 2)
             {
-                this.menuOptions[0].setVisible(1)
-                this.menuOptions[1].setVisible(1)
-                this.menuOptions[2].setVisible(0)
-                this.menuOptions[3].setVisible(1)
-
-                this.player.setPosition(this.menuOptions[2].x, this.menuOptions[2].y);
+                this.player.setPosition(this.menuOptions[2].x - 64, this.menuOptions[2].y);
 
                 switch(this.currentButton)
                 {
@@ -421,12 +444,8 @@ export default class BattleFramework extends Phaser.Scene
 
             }else if(this.menuOptionCols == false && this.menuOptionRows == false  && this.menuOptionOverload > 3)
             {
-                this.menuOptions[0].setVisible(1)
-                this.menuOptions[1].setVisible(1)
-                this.menuOptions[2].setVisible(1)
-                this.menuOptions[3].setVisible(0)
 
-                this.player.setPosition(this.menuOptions[3].x, this.menuOptions[3].y);
+                this.player.setPosition(this.menuOptions[3].x - 64, this.menuOptions[3].y);
 
                 switch(this.currentButton)
                 {
@@ -450,45 +469,57 @@ export default class BattleFramework extends Phaser.Scene
             this.setBoxSize('text')
             
             //Flavour text stuff
-            this.flavourText = this.add.text(320, 524, this.generateText('SAMPLE', 0), { fontFamily: 'Determination', fontSize: '40px'});
+            this.time.addEvent({
+                delay: 300,
+                callback: ()=>{
+                    this.star = this.add.sprite(240, 548, 'star')
+                    this.typeText('flavourText', this.generateText('SAMPLE', 0))
+                }
+            })
         }else if(this.controlType == 'menu2')
         {
+            if(this.currentButton == 1)//Fight button
+            {
+                this.menuOptions[0] = this.add.sprite(320, 548, 'star');
+                this.textOptions[0] = this.add.text(368, 524, "Flowey", { fontFamily: 'Determination', fontSize: '56px'});
+            }
             if(this.currentButton == 2)//Act button
             {
                 this.menuOptions = [
-                    this.add.sprite(320, 540, 'star'), 
-                    this.add.sprite(320, 668, 'star'),
-                    this.add.sprite(736, 540, 'star'),
-                    this.add.sprite(736, 668, 'star')
+                    this.add.sprite(320, 548, 'star'), 
+                    this.add.sprite(320, 676, 'star'),
+                    this.add.sprite(768, 548, 'star'),
+                    this.add.sprite(768, 676, 'star')
                 ]
                 this.textOptions = [
-                    this.add.text(352, 522, this.actsText[0], { fontFamily: 'Determination', fontSize: '40px'}),
-                    this.add.text(352, 650, this.actsText[1], { fontFamily: 'Determination', fontSize: '40px'}),
-                    this.add.text(768, 522, this.actsText[2], { fontFamily: 'Determination', fontSize: '40px'}),
-                    this.add.text(768, 650, this.actsText[3], { fontFamily: 'Determination', fontSize: '40px'}),
+                    this.add.text(368, 524, this.actsText[0], { fontFamily: 'Determination', fontSize: '56px'}),
+                    this.add.text(368, 650, this.actsText[1], { fontFamily: 'Determination', fontSize: '56px'}),
+                    this.add.text(816, 522, this.actsText[2], { fontFamily: 'Determination', fontSize: '56px'}),
+                    this.add.text(816, 650, this.actsText[3], { fontFamily: 'Determination', fontSize: '56px'}),
                 ]
                 
             }else if(this.currentButton == 3)//Item button
             {
                 this.menuOptions = [
-                    this.add.sprite(320, 540, 'star'), 
-                    this.add.sprite(320, 668, 'star'),
-                    this.add.sprite(736, 540, 'star'),
-                    this.add.sprite(736, 668, 'star')
+                    this.add.sprite(320, 548, 'star'), 
+                    this.add.sprite(320, 676, 'star'),
+                    this.add.sprite(768, 548, 'star'),
+                    this.add.sprite(768, 676, 'star')
                 ]
                 this.textOptions = [
-                    this.add.text(352, 522, this.itemsText[0], { fontFamily: 'Determination', fontSize: '40px'}),
-                    this.add.text(352, 650, this.itemsText[1], { fontFamily: 'Determination', fontSize: '40px'}),
-                    this.add.text(768, 522, this.itemsText[2], { fontFamily: 'Determination', fontSize: '40px'}),
-                    this.add.text(768, 650, this.itemsText[3], { fontFamily: 'Determination', fontSize: '40px'}),
+                    this.add.text(368, 524, this.itemsText[0], { fontFamily: 'Determination', fontSize: '56px'}),
+                    this.add.text(368, 650, this.itemsText[1], { fontFamily: 'Determination', fontSize: '56px'}),
+                    this.add.text(816, 522, this.itemsText[2], { fontFamily: 'Determination', fontSize: '56px'}),
+                    this.add.text(816, 650, this.itemsText[3], { fontFamily: 'Determination', fontSize: '56px'}),
                 ]
             }else if(this.currentButton == 4)//Mercy button
             {
-                this.menuOptions[0] = this.add.sprite(320, 540, 'star');
-                this.textOptions[0] = this.add.text(352, 522, "Spare", { fontFamily: 'Determination', fontSize: '40px'});
+                this.menuOptions[0] = this.add.sprite(320, 548, 'star');
+                this.textOptions[0] = this.add.text(368, 524, "Spare", { fontFamily: 'Determination', fontSize: '56px'});
             }
-        }else if(this.controlType == 'freemove')
+        }else if(this.controlType == 'fight')
         {
+
         }
     }
     clearMenu()
@@ -502,6 +533,7 @@ export default class BattleFramework extends Phaser.Scene
         this.textOptions[2].destroy()
         this.textOptions[3].destroy()
         this.flavourText.destroy()
+        this.star.destroy()
 
     }
     onDamaged()
@@ -553,24 +585,29 @@ export default class BattleFramework extends Phaser.Scene
 
     textSequence(firstText, secondText)
     {
-        this.controlType = 'nocontrol'
+        this.controlType = 'noControl'
         this.clearMenu()
         this.player.setVisible(false)
         if(firstText != null)
         {
-            this.flavourText = this.add.text(320, 524, firstText, { fontFamily: 'Determination', fontSize: '40px'});
+            this.star = this.add.sprite(240, 548, 'star')
+            this.typeText('flavourText', firstText)
             let continueKey = this.keyZ.on('down', ()=>{
                 if(secondText != null)
                 {
                     continueKey.destroy()
+                    this.flavourText_looper.destroy()
                     this.clearMenu()
-                    this.flavourText = this.add.text(320, 524, secondText, { fontFamily: 'Determination', fontSize: '40px'});
+                    this.star = this.add.sprite(240, 548, 'star')
+                    this.typeText('flavourText', secondText)
                     continueKey = this.keyZ.on('down', ()=>{
                         continueKey.destroy()
+                        this.flavourText_looper.destroy()
                         this.monsterSpeak(this.monsterStage)
                     })
                 }else{
                     continueKey.destroy()
+                    this.flavourText_looper.destroy()
                     this.monsterSpeak(this.monsterStage)
                 }
             })
@@ -588,39 +625,47 @@ export default class BattleFramework extends Phaser.Scene
             var dialogue = generatedText[0].split(' | ') //dialogue[0] = emotion context, dialogue[1] = text
             this.flowey.play(dialogue[0])
             let textbox = this.add.sprite(1088, 320, 'text_box')
-            let text = this.add.text(940, 256, dialogue[1], { fontFamily: 'Determination', fontSize: '32px', color: 'Black'})
+            this.typeText('dialogue', dialogue[1])
             let continueKey = this.keyZ.on('down', ()=>{
                 continueKey.destroy()
                 if(generatedText[1])
                 {
                     dialogue = generatedText[1].split(' | ')
                     this.flowey.play(dialogue[0])
-                    text.destroy()
-                    text = this.add.text(940, 256, dialogue[1], { fontFamily: 'Determination', fontSize: '32px', color: 'Black'})
+                    this.monsterText.destroy()
+                    this.monsterText_looper.destroy()
+                    this.monsterSpeak_looper.destroy()
+                    this.typeText('dialogue', dialogue[1])
                     continueKey = this.keyZ.on('down', ()=>{
                         continueKey.destroy()
                         if(generatedText[2])
                         {
                             dialogue = generatedText[2].split(' | ')
                             this.flowey.play(dialogue[0])
-                            text.destroy()
-                            text = this.add.text(940, 256, dialogue[1], { fontFamily: 'Determination', fontSize: '32px', color: 'Black'})
+                            this.monsterText.destroy()
+                            this.monsterText_looper.destroy()
+                            this.monsterSpeak_looper.destroy()
+                            this.typeText('dialogue', dialogue[1])
                             continueKey = this.keyZ.on('down', ()=>{
                                 continueKey.destroy()
 
-                                text.destroy()
+                                this.monsterText.destroy()
+                                this.monsterText_looper.destroy()
+                                this.monsterSpeak_looper.destroy()
                                 textbox.destroy()
                                 this.monsterAttack('generic', 5000)
                             })
                         }else{
-                            text.destroy()
+                            this.monsterText.destroy()
+                            this.monsterText_looper.destroy()
+                            this.monsterSpeak_looper.destroy()
                             textbox.destroy()
                             this.monsterAttack('generic', 5000)
                         }
 
                     })
                 }else{
-                    text.destroy()
+                    this.monsterText.destroy()
                     textbox.destroy()
                     this.monsterAttack('generic', 5000)
                 }
@@ -720,5 +765,57 @@ export default class BattleFramework extends Phaser.Scene
                     this.boxEdges[3].body.updateFromGameObject()
                 }
             })
+    }
+    typeText(location, textInput) // top  548, mid 612, bot  676
+    {
+        var x = 0;
+        var newText;
+
+        switch(location)
+        {
+            case 'flavourText':
+                console.log(textInput)
+                this.flavourText = this.add.text(288 , 524, '', { fontFamily: 'Determination', fontSize: '56px'});
+
+                this.flavourText_looper = this.time.addEvent({
+                    delay: 35,
+                    repeat: textInput.length,
+                    callback: ()=>{
+                        newText = textInput.slice(0, x)
+                        this.flavourText.setText(newText)
+                        this.snd_text.play()
+                        x++
+                    }
+                });
+            break;
+            case 'dialogue':
+
+                this.monsterText = this.add.text(940, 256, '', { fontFamily: 'Determination', fontSize: '32px', color: 'Black'})
+                const currentAnim = this.flowey.anims.currentAnim.key
+                this.flowey.play(currentAnim + '_talk')
+                this.monsterText_looper = this.time.addEvent({
+                    delay: 40,
+                    repeat: textInput.length,
+                    callback: ()=>{
+                        newText = textInput.slice(0, x)
+                        this.monsterText.setText(newText)
+                        if(this.flowey.frame.name == 12 || this.flowey.frame.name == 13){
+                            //sinister and evil
+                            this.snd_floweytalk2.play()
+                        }else{
+                            //others
+                            this.snd_floweytalk1.play()
+                        }
+                        x++
+                    }
+                });
+                this.monsterSpeak_looper = this.time.addEvent({
+                    delay: 40 * this.monsterText_looper.repeatCount,
+                    callback: ()=>{
+                        this.flowey.play(currentAnim)
+                    },
+                })
+            break;
+        }
     }
 }
