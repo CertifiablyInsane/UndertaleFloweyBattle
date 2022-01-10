@@ -333,6 +333,7 @@ export default class Battle extends BattleFramework
 
     monsterAttack(attackParam, length)
     {
+        length = 999999
         this.controlType = 'freemove'
         this.generateMenu()
         this.player.setPosition(720, 534);
@@ -345,13 +346,13 @@ export default class Battle extends BattleFramework
                 switch(rndNum)
                 {
                     case 0:
-                        attackParam = 'rain'
+                        attackParam = 'warning'
                         break;
                     case 1:
-                        attackParam = 'horizcross'
+                        attackParam = 'warning'
                         break;
                     case 2:
-                        attackParam = 'shooter'
+                        attackParam = 'warning'
                         break;                    
                 }
         }
@@ -359,6 +360,65 @@ export default class Battle extends BattleFramework
         console.log(attackParam)
         switch(attackParam)
         {
+            case 'warning':
+                var atkCounter = 0
+                var warningGraphicOrigin
+                var spawnMin
+                var spawnMax
+                this.setBoxSize('text')
+                this.add.sprite(720, 612, 'box_helper')
+                    .setDisplaySize(384, 256)
+                    this.bulletMaker = this.time.addEvent({
+                        delay: Phaser.Math.Between(125, 500),
+                        loop: true,
+                        callback: ()=>{
+                            var spawn = Phaser.Math.Between(656, 784);
+                            var destination = spawn
+                            this.bullet = this.physics.add.sprite(spawn, 804, 'bullet_circle')
+                                .setBodySize(16, 16)
+                                .anims.play('idle')
+                            this.bullet.alpha = 0
+
+                            this.tweens.add({
+                                targets: this.bullet,
+                                duration: 250,
+                                alpha: 1
+                            })
+                            this.bullets.add(this.bullet)
+                            this.physics.moveTo(this.bullet, destination, 420, undefined, 2500)
+                        }
+                    })
+                this.bulletLooper = this.time.addEvent({
+                    delay: 4000,
+                    loop: true,
+                    callback: ()=>{
+                        atkCounter++;
+                        if(atkCounter % 2 == 1){ //left side attack
+                            warningGraphicOrigin = 592
+                            spawnMin = 528
+                            spawnMax = 656
+                        }else{ //right side attacks
+                            warningGraphicOrigin = 848
+                            spawnMin = 784
+                            spawnMax = 912
+                        }
+                        this.warningGraphic = this.add.sprite(warningGraphicOrigin, 612, 'star')
+                        var warningTimer = this.time.addEvent({
+                            delay: 250,
+                            repeat: 8,
+                            callback: ()=>{
+                                this.warningGraphic.toggleData('visible')
+                                console.log('toggle')
+                                if(warningTimer.repeatCount == 9)
+                                {
+                                    console.log('done warning')
+                                    this.warningGraphic.destroy()
+                                }
+                            }
+                        })
+                    }
+                })
+            break;
             case 'rain':
                 this.setBoxSize('square')
                 this.bulletMaker = this.time.addEvent({
