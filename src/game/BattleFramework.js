@@ -347,6 +347,8 @@ export default class BattleFramework extends Phaser.Scene
         {
             if(this.pressReset == true)
             {
+                if(this.menuOptionOverload > 2)
+                {
                     if(this.cursors.left.isDown || this.cursors.right.isDown)
                     {
                         this.pressReset = false;
@@ -357,6 +359,7 @@ export default class BattleFramework extends Phaser.Scene
                             this.menuOptionCols = true
                         }
                     }
+                }
                 if(this.cursors.up.isDown || this.cursors.down.isDown)
                     {
                         this.pressReset = false;
@@ -500,12 +503,47 @@ export default class BattleFramework extends Phaser.Scene
                 
             }else if(this.currentButton == 3)//Item button
             {
-                this.menuOptions = [
+                /*
                     this.add.sprite(320, 548, 'star'), 
                     this.add.sprite(320, 676, 'star'),
                     this.add.sprite(768, 548, 'star'),
                     this.add.sprite(768, 676, 'star')
-                ]
+                */
+
+                    //this is inefficient and bleh
+                if(this.menuOptionOverload == 1)
+                {
+                    this.menuOptions = [
+                        this.add.sprite(320, 548, 'star'), 
+                        this.add.sprite(-128, 0, null),
+                        this.add.sprite(-128, 0, null),
+                        this.add.sprite(-128, 0, null)
+                    ]
+                }else if(this.menuOptionOverload == 2)
+                {
+                    this.menuOptions = [
+                        this.add.sprite(320, 548, 'star'), 
+                        this.add.sprite(320, 676, 'star'),
+                        this.add.sprite(-128, 0, null),
+                        this.add.sprite(-128, 0, null),
+                    ]
+                }else if(this.menuOptionOverload == 3)
+                {
+                    this.menuOptions = [
+                        this.add.sprite(320, 548, 'star'), 
+                        this.add.sprite(320, 676, 'star'),
+                        this.add.sprite(768, 548, 'star'),
+                        this.add.sprite(-128, 0, null),
+                    ]
+                }else if(this.menuOptionOverload == 4)
+                {
+                    this.menuOptions = [
+                        this.add.sprite(320, 548, 'star'), 
+                        this.add.sprite(320, 676, 'star'),
+                        this.add.sprite(768, 548, 'star'),
+                        this.add.sprite(768, 676, 'star')
+                    ]
+                }
                 this.textOptions = [
                     this.add.text(368, 524, this.itemsText[0], { fontFamily: 'Determination', fontSize: '56px'}),
                     this.add.text(368, 650, this.itemsText[1], { fontFamily: 'Determination', fontSize: '56px'}),
@@ -719,6 +757,43 @@ export default class BattleFramework extends Phaser.Scene
                 });
             break;
             case 'square':
+                this.tweens.add({
+                    targets: this.boxhelper,
+                    props: {
+                        scaleX: { value: 1, duration: 300, ease: 'Linear' },
+                        scaleY: {value: 1, duration: 100, ease: 'Linear'},
+                    },
+                });
+                this.tweens.add({
+                    targets: this.boxEdges[0],
+                    props: {
+                        x: { value: 594, duration: 300, ease: 'Linear' },
+                        scaleY: {value: 1, duration: 100, ease: 'Linear'},
+                    },
+                });
+                this.tweens.add({
+                    targets: this.boxEdges[1],
+                    props: {
+                        x: { value: 846, duration: 300, ease: 'Linear' },
+                        scaleY: {value: 1, duration: 100, ease: 'Linear'},
+                    },
+                });
+                this.tweens.add({
+                    targets: this.boxEdges[2],
+                    props: {
+                        scaleX: { value: 1, duration: 300, ease: 'Linear' },
+                        y: { value: 486, duration: 100, ease: 'Linear' },
+                    },
+                });
+                this.tweens.add({
+                    targets: this.boxEdges[3],
+                    props: {
+                        scaleX: { value: 1, duration: 300, ease: 'Linear' },
+                        y: { value: 738, duration: 100, ease: 'Linear' },
+                    },
+                });
+            break;
+            case 'rect384':
                 this.tweens.add({
                     targets: this.boxhelper,
                     props: {

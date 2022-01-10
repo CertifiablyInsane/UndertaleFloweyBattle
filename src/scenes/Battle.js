@@ -22,6 +22,10 @@ export default class Battle extends BattleFramework
         {
             frameWidth: 32, frameHeight: 32,
         });
+        this.load.spritesheet('bullet', 'assets/battle/bullet.png', 
+        {
+            frameWidth: 32, frameHeight: 32,
+        });
         this.load.spritesheet('flowey', 'assets/battle/flowey.png', 
         {
             frameWidth: 256, frameHeight: 256,
@@ -29,6 +33,8 @@ export default class Battle extends BattleFramework
         this.load.audio('floweytalk1', 'assets/snd/misc/snd_floweytalk1.wav')
         this.load.audio('floweytalk2', 'assets/snd/misc/snd_floweytalk2.wav')
         this.load.audio('floweylaugh', 'assets/snd/misc/snd_floweylaugh.wav')
+        this.load.audio('snd_noise', 'assets/snd/battle/snd_noise.wav')
+        this.load.audio('snd_spawn', 'assets/snd/battle/snd_spawn.wav')
     }
 
     create()
@@ -36,7 +42,7 @@ export default class Battle extends BattleFramework
         super.create()
         this.actsText = ['Check', 'Talk', 'Plead', 'Cry']
 
-        this.itemsText = ['KromerBar', 'AstroFood', 'Pie', 'MonsterCandy']
+        this.itemsText = ['KromerBar', 'AstroFood', 'ButtsPie', 'MonsterCandy']
 
         this.numItems = 4
 
@@ -51,18 +57,19 @@ export default class Battle extends BattleFramework
         this.snd_floweytalk1 = this.sound.add('floweytalk1', { volume: 0.6, loop: false, });
         this.snd_floweytalk2 = this.sound.add('floweytalk2', { volume: 0.6, loop: false, });
         this.snd_floweylaugh = this.sound.add('floweylaugh', { volume: 0.8, loop: false, });
+        
+        this.snd_noise = this.sound.add('snd_noise', { volume: 0.6, loop: false, });
+        this.snd_spawn = this.sound.add('snd_spawn', { volume: 0.6, loop: false, });
 
         //ANIM
-        this.anims.generateFrameNames('bullet_circle')
+        this.anims.generateFrameNames('bullet')
         this.anims.create({
             key: 'idle',
             frames: [
-                { key: 'bullet_circle',frame:0 },
-                { key: 'bullet_circle',frame:1 },
-                { key: 'bullet_circle',frame:2 },
-                { key: 'bullet_circle',frame:1 },
+                { key: 'bullet',frame:0 },
+                { key: 'bullet',frame:1 },
             ],
-            frameRate: 8,
+            frameRate: 12,
             repeat: -1
         });
 
@@ -297,13 +304,13 @@ export default class Battle extends BattleFramework
         //ITEM EFFECTS
         switch(selectedItem)
         {
-            case 'KromerBurger':
+            case 'KromerBar':
                 this.currentPlayerHP = this.currentPlayerHP + 15;
                 break;
-            case 'ClubsSandwich':
+            case 'AstroFood':
                 this.currentPlayerHP = this.currentPlayerHP + 11;
                 break;
-            case 'Pie':
+            case 'ButtsPie':
                 this.currentPlayerHP = this.currentPlayerHP + 20;
                 break;
             case 'MonsterCandy':
@@ -331,32 +338,77 @@ export default class Battle extends BattleFramework
         this.textSequence(null, null)
     }
 
-    monsterAttack(attackParam, length)
+    monsterAttack()
     {
+        var attackParam;
+        var length;
         this.controlType = 'freemove'
         this.generateMenu()
         this.player.setPosition(720, 534);
         this.player.setVisible(true)
+        
+        //MANUAL OVERRIDE FOR DEBUG
+        this.monsterStage = 3
                 
-        if(attackParam == 'generic')
+        switch(this.monsterStage)
         {
-            var rndNum = Phaser.Math.Between(0, 2);
-                console.log(rndNum)
-                switch(rndNum)
-                {
-                    case 0:
-                        attackParam = 'rain'
-                        break;
-                    case 1:
-                        attackParam = 'horizcross'
-                        break;
-                    case 2:
-                        attackParam = 'shooter'
-                        break;                    
-                }
+            case 0: //hi I'm flowey
+                attackParam = 'rain'
+                length = 5000
+            break;
+            case 1: //how many times?
+                attackParam = 'horizcross'
+                length = 5000
+            break;
+            case 2: //You don't care
+                attackParam = 'shooter'
+                length = 5000
+            break;     
+            case 3: //Who am I to judge
+                attackParam = 'warning'
+                length = 15000
+            break;
+            case 4: //Gave your life back
+
+            break;
+            case 5: //Over and over
+
+            break;
+            case 6:
+
+            break;
+            case 7:
+
+            break;
+            case 8:
+
+            break;
+            case 9:
+
+            break;
+            case 10:
+
+            break;
+            case 11:
+
+            break;
+            case 12:
+
+            break;
+            case 13:
+
+            break;
+            case 14:
+
+            break;
+            case 15:
+
+            break;
+            case 16:
+
+            break;
         }
                 
-        console.log(attackParam)
         switch(attackParam)
         {
             case 'rain':
@@ -366,12 +418,18 @@ export default class Battle extends BattleFramework
                     callback: ()=>{
                         var spawn = Phaser.Math.Between(512, 938);
                         var destination = Phaser.Math.Between(512, 938);
-                        this.bullet = this.physics.add.sprite(spawn, 256, 'bullet_circle')
+                        this.bullet = this.physics.add.sprite(spawn, 256, 'bullet')
                             .setBodySize(16, 16)
                             .anims.play('idle')
-                        
+                        this.bullet.alpha = 0
+                            this.tweens.add({
+                                targets: this.bullet,
+                                alpha: 1,
+                                duration: 250,
+                            })
                         this.bullets.add(this.bullet)
                         this.physics.moveTo(this.bullet, destination, 720, undefined, 2000)
+                        this.snd_spawn.play()
                                 
                     },
                     loop: true
@@ -393,7 +451,7 @@ export default class Battle extends BattleFramework
                                 side = 1002
                                 destination = 448
                             }
-                            this.bullet = this.physics.add.sprite(side, spawn, 'bullet_circle')
+                            this.bullet = this.physics.add.sprite(side, spawn, 'bullet')
                                 .setScale(1.5)
                                 .setBodySize(20, 20)
                                 .anims.play('idle')
@@ -406,7 +464,7 @@ export default class Battle extends BattleFramework
                     });
                     break;
             case 'shooter':
-                this.setBoxSize('square')
+                this.setBoxSize('rect384')
                 this.bulletLooper = this.time.addEvent({
                     delay: 1000,
                     startAt: 900,
@@ -414,7 +472,7 @@ export default class Battle extends BattleFramework
                         this.bulletMaker = this.time.addEvent({
                             delay: 40,
                             callback: ()=>{
-                                this.bullet = this.physics.add.sprite(720, 256, 'bullet_circle')
+                                this.bullet = this.physics.add.sprite(720, 256, 'bullet')
                                     .setScale(1)
                                     .setBodySize(16, 16)
                                     .anims.play('idle')
@@ -428,7 +486,64 @@ export default class Battle extends BattleFramework
                     },
                     loop: true
                 })
-                break;
+            break;
+            case 'warning':
+                var atkCounter = 0
+                var warningGraphicOrigin
+                var spawnMin
+                var spawnMax
+                this.setBoxSize('rect384')
+                    this.bulletMaker = this.time.addEvent({
+                        delay: Phaser.Math.Between(125, 500),
+                        loop: true,
+                        callback: ()=>{
+                            var spawn = Phaser.Math.Between(656, 784);
+                            var destination = spawn
+                            this.bullet = this.physics.add.sprite(spawn, 804, 'bullet_circle')
+                                .setBodySize(16, 16)
+                                .anims.play('idle')
+                            this.bullet.alpha = 0
+
+                            this.tweens.add({
+                                targets: this.bullet,
+                                duration: 250,
+                                alpha: 1
+                            })
+                            this.bullets.add(this.bullet)
+                            this.physics.moveTo(this.bullet, destination, 420, undefined, 2500)
+                        }
+                    })
+                this.bulletLooper = this.time.addEvent({
+                    delay: 4000,
+                    loop: true,
+                    callback: ()=>{
+                        atkCounter++;
+                        if(atkCounter % 2 == 1){ //left side attack
+                            warningGraphicOrigin = 592
+                            spawnMin = 528
+                            spawnMax = 656
+                        }else{ //right side attacks
+                            warningGraphicOrigin = 848
+                            spawnMin = 784
+                            spawnMax = 912
+                        }
+                        this.warningGraphic = this.add.sprite(warningGraphicOrigin, 612, 'star')
+                        var warningTimer = this.time.addEvent({
+                            delay: 250,
+                            repeat: 8,
+                            callback: ()=>{
+                                this.warningGraphic.toggleData('visible')
+                                console.log('toggle')
+                                if(warningTimer.repeatCount == 9)
+                                {
+                                    console.log('done warning')
+                                    this.warningGraphic.destroy()
+                                }
+                            }
+                        })
+                    }
+                })
+            break;
             }
                 
             this.bulletOverlap.active = true
@@ -505,19 +620,19 @@ export default class Battle extends BattleFramework
             switch(textParam)
             {
                 case 'KromerBar':
-                    returnText[0] = 'You ate the KromerBar!'
-                    returnText[1] = 'Tastes like a scam.\nRecovered 15 HP!'
+                    returnText[0] = `yUO'RE [[eated]] TH3\nTHE     KrOMERBAR(TM)!!!`
+                    returnText[1] = 'Tastes like a computer virus.\nRecovered 15 HP!'
                     break;
                 case 'AstroFood':
-                    returnText[0] = 'You ate the AstroFood'
+                    returnText[0] = 'You ate the Astronaut Food'
                     returnText[1] = 'Tastes cold and lonely.\nRecovered 11 HP!'
                     break;
-                case 'Pie':
-                    returnText[0] = 'You ate the Pie!'
-                    returnText[1] = 'Tastes like snails.\nRecovered 20 HP!'
+                case 'ButtsPie':
+                    returnText[0] = 'You ate the Butterscotch Pie!'
+                    returnText[1] = 'Tastes like snails and goat fur.\nRecovered 20 HP!'
                     break;
                 case 'MonsterCandy':
-                    returnText[0] = 'You ate the MonsterCandy!'
+                    returnText[0] = 'You ate the Monster Candy!'
                     returnText[1] = 'Tastes like rotting teeth.\nRecovered 7 HP!'
                     break;
             }
