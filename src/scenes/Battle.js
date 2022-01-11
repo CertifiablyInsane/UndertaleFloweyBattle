@@ -30,11 +30,22 @@ export default class Battle extends BattleFramework
         {
             frameWidth: 256, frameHeight: 256,
         });
+        this.load.spritesheet('warning_graphic', 'assets/battle/warningGraphic.png', 
+        {
+            frameWidth: 64, frameHeight: 192,
+        });
         this.load.audio('floweytalk1', 'assets/snd/misc/snd_floweytalk1.wav')
         this.load.audio('floweytalk2', 'assets/snd/misc/snd_floweytalk2.wav')
         this.load.audio('floweylaugh', 'assets/snd/misc/snd_floweylaugh.wav')
         this.load.audio('snd_noise', 'assets/snd/battle/snd_noise.wav')
         this.load.audio('snd_spawn', 'assets/snd/battle/snd_spawn.wav')
+        this.load.audio('snd_warn', 'assets/snd/battle/snd_warn.wav')
+    }
+
+    init()
+    {
+        super.init()
+        this.cameras.main.fadeIn()
     }
 
     create()
@@ -60,6 +71,7 @@ export default class Battle extends BattleFramework
         
         this.snd_noise = this.sound.add('snd_noise', { volume: 0.6, loop: false, });
         this.snd_spawn = this.sound.add('snd_spawn', { volume: 0.6, loop: false, });
+        this.snd_warn = this.sound.add('snd_warn', { volume: 0.6, loop: false,});
 
         //ANIM
         this.anims.generateFrameNames('bullet')
@@ -70,6 +82,16 @@ export default class Battle extends BattleFramework
                 { key: 'bullet',frame:1 },
             ],
             frameRate: 12,
+            repeat: -1
+        });
+        this.anims.generateFrameNames('warning_graphic')
+        this.anims.create({
+            key: 'warn',
+            frames: [
+                { key: 'warning_graphic',frame:0 },
+                { key: 'warning_graphic',frame:1 },
+            ],
+            frameRate: 8,
             repeat: -1
         });
 
@@ -348,7 +370,7 @@ export default class Battle extends BattleFramework
         this.player.setVisible(true)
         
         //MANUAL OVERRIDE FOR DEBUG
-        this.monsterStage = 3
+        //this.monsterStage = 4
                 
         switch(this.monsterStage)
         {
@@ -369,10 +391,12 @@ export default class Battle extends BattleFramework
                 length = 15000
             break;
             case 4: //Gave your life back
-
+                attackParam = 'sidetoside'
+                length = 10000
             break;
             case 5: //Over and over
-
+                attackParam = 'rain_fast'
+                length = 10000
             break;
             case 6:
 
@@ -411,65 +435,6 @@ export default class Battle extends BattleFramework
                 
         switch(attackParam)
         {
-            case 'warning':
-                var atkCounter = 0
-                var warningGraphicOrigin
-                var spawnMin
-                var spawnMax
-                this.setBoxSize('text')
-                this.add.sprite(720, 612, 'box_helper')
-                    .setDisplaySize(384, 256)
-                    this.bulletMaker = this.time.addEvent({
-                        delay: Phaser.Math.Between(125, 500),
-                        loop: true,
-                        callback: ()=>{
-                            var spawn = Phaser.Math.Between(656, 784);
-                            var destination = spawn
-                            this.bullet = this.physics.add.sprite(spawn, 804, 'bullet_circle')
-                                .setBodySize(16, 16)
-                                .anims.play('idle')
-                            this.bullet.alpha = 0
-
-                            this.tweens.add({
-                                targets: this.bullet,
-                                duration: 250,
-                                alpha: 1
-                            })
-                            this.bullets.add(this.bullet)
-                            this.physics.moveTo(this.bullet, destination, 420, undefined, 2500)
-                        }
-                    })
-                this.bulletLooper = this.time.addEvent({
-                    delay: 4000,
-                    loop: true,
-                    callback: ()=>{
-                        atkCounter++;
-                        if(atkCounter % 2 == 1){ //left side attack
-                            warningGraphicOrigin = 592
-                            spawnMin = 528
-                            spawnMax = 656
-                        }else{ //right side attacks
-                            warningGraphicOrigin = 848
-                            spawnMin = 784
-                            spawnMax = 912
-                        }
-                        this.warningGraphic = this.add.sprite(warningGraphicOrigin, 612, 'star')
-                        var warningTimer = this.time.addEvent({
-                            delay: 250,
-                            repeat: 8,
-                            callback: ()=>{
-                                this.warningGraphic.toggleData('visible')
-                                console.log('toggle')
-                                if(warningTimer.repeatCount == 9)
-                                {
-                                    console.log('done warning')
-                                    this.warningGraphic.destroy()
-                                }
-                            }
-                        })
-                    }
-                })
-            break;
             case 'rain':
                 this.setBoxSize('square')
                 this.bulletMaker = this.time.addEvent({
@@ -488,7 +453,30 @@ export default class Battle extends BattleFramework
                             })
                         this.bullets.add(this.bullet)
                         this.physics.moveTo(this.bullet, destination, 720, undefined, 2000)
-                        this.snd_spawn.play()
+                                
+                    },
+                    loop: true
+                });
+                            
+                break;
+            case 'rain_fast':
+                this.setBoxSize('square')
+                this.bulletMaker = this.time.addEvent({
+                    delay: 200,
+                    callback: ()=>{
+                        var spawn = Phaser.Math.Between(512, 938);
+                        var destination = Phaser.Math.Between(512, 938);
+                        this.bullet = this.physics.add.sprite(spawn, 256, 'bullet')
+                            .setBodySize(16, 16)
+                            .anims.play('idle')
+                        this.bullet.alpha = 0
+                            this.tweens.add({
+                                targets: this.bullet,
+                                alpha: 1,
+                                duration: 250,
+                            })
+                        this.bullets.add(this.bullet)
+                        this.physics.moveTo(this.bullet, destination, 720, undefined, 1500)
                                 
                     },
                     loop: true
@@ -558,7 +546,7 @@ export default class Battle extends BattleFramework
                         callback: ()=>{
                             var spawn = Phaser.Math.Between(656, 784);
                             var destination = spawn
-                            this.bullet = this.physics.add.sprite(spawn, 804, 'bullet_circle')
+                            this.bullet = this.physics.add.sprite(spawn, 804, 'bullet')
                                 .setBodySize(16, 16)
                                 .anims.play('idle')
                             this.bullet.alpha = 0
@@ -569,11 +557,11 @@ export default class Battle extends BattleFramework
                                 alpha: 1
                             })
                             this.bullets.add(this.bullet)
-                            this.physics.moveTo(this.bullet, destination, 420, undefined, 2500)
+                            this.physics.moveTo(this.bullet, destination, 420, undefined, Phaser.Math.Between(2250, 2750))
                         }
                     })
                 this.bulletLooper = this.time.addEvent({
-                    delay: 4000,
+                    delay: 3600,
                     loop: true,
                     callback: ()=>{
                         atkCounter++;
@@ -586,34 +574,79 @@ export default class Battle extends BattleFramework
                             spawnMin = 784
                             spawnMax = 912
                         }
-                        this.warningGraphic = this.add.sprite(warningGraphicOrigin, 612, 'star')
-                        var warningTimer = this.time.addEvent({
-                            delay: 250,
-                            repeat: 8,
+                        this.warningGraphic = this.add.sprite(warningGraphicOrigin, 612, 'warning_graphic')
+                            .play('warn')
+                        this.snd_warn.play()
+                        this.warningTimer = this.time.addEvent({
+                            delay: 1000,
                             callback: ()=>{
-                                this.warningGraphic.toggleData('visible')
-                                console.log('toggle')
-                                if(warningTimer.repeatCount == 9)
-                                {
-                                    console.log('done warning')
-                                    this.warningGraphic.destroy()
-                                }
+                                this.warningGraphic.destroy()
+                                this.snd_break2.play()
+                                this.bulletMakerExtra = this.time.addEvent({
+                                    delay: 35,
+                                    repeat: 50,
+                                    callback: ()=>{
+                                        var spawn = Phaser.Math.Between(spawnMin, spawnMax);
+                                        var destination = spawn
+                                        this.bullet = this.physics.add.sprite(spawn, 804, 'bullet')
+                                            .setBodySize(16, 16)
+                                            .anims.play('idle')
+                                        this.bullet.alpha = 0
+            
+                                        this.tweens.add({
+                                            targets: this.bullet,
+                                            duration: 125,
+                                            alpha: 1
+                                        })
+                                        this.bullets.add(this.bullet)
+                                        this.physics.moveTo(this.bullet, destination, 420, undefined, Phaser.Math.Between(1250, 1750))
+                                    }
+                                })
                             }
                         })
                     }
                 })
             break;
+            case 'sidetoside':
+                this.setBoxSize('tall384')
+                this.bulletMaker = this.time.addEvent({
+                    delay: 1000,
+                    callback: ()=>{
+                            for (let i = 0; i < 8; i++) {
+                                this.bullet = this.physics.add.sprite(600 + (i * 16), 804, 'bullet')
+                                    .setBodySize(16, 16)
+                                    .anims.play('idle')   
+                                this.bullet.alpha = 0
+            
+                                this.tweens.add({
+                                    targets: this.bullet,
+                                    duration: 250,
+                                    alpha: 1
+                                })
+                                this.bullets.add(this.bullet)
+                                this.physics.moveTo(this.bullet, 600 + (i * 16), 292, undefined, 3000)                                                          
+                            }                                                            
+                        },
+                        loop: true
+                    });
+                this.bulletMakerExtra = this.time.addEvent({
+                    delay: 1000,
+                    startAt: 500,
+                    callback: ()=>{
+                            for (let i = 0; i < 8; i++) {
+                                this.bullet = this.physics.add.sprite(840 - (i * 16), 292, 'bullet')
+                                    .setBodySize(16, 16)
+                                    .anims.play('idle')   
+                                this.bullets.add(this.bullet)
+                                this.physics.moveTo(this.bullet, 840 - (i * 16), 804, undefined, 3000)                                                          
+                            }                                                            
+                        },
+                        loop: true
+                    });
+            break;
             }
                 
             this.bulletOverlap.active = true
-
-            this.tweens.add({
-                targets: this.boxhelper,
-                props: {
-                    scaleX: { value: 1, duration: 300, ease: 'Linear' },
-                    scaleY: { value: 1, duration: 100, ease: 'Linear' },
-                },
-            });
         
             //Attack phase over
             this.time.addEvent({
@@ -629,6 +662,17 @@ export default class Battle extends BattleFramework
                     this.monsterStage++; //Increment monster stage
                     if(attackParam == 'shooter'){
                         this.bulletLooper.remove()
+                    }
+                    else if(attackParam == 'warning')
+                    {
+                        this.warningTimer.remove()
+                        this.bulletMakerExtra.remove()
+                        this.bulletLooper.remove()
+                        this.warningGraphic.destroy()
+                    }
+                    else if(attackParam == 'sidetoside')
+                    {
+                        this.bulletMakerExtra.remove()
                     }
                 },
                 loop: false
@@ -733,6 +777,13 @@ export default class Battle extends BattleFramework
     killPlayer()
     {
         console.log("DEADEDEDD")
-        this.scene.start('Dead')
+        this.time.addEvent({
+            delay: 1,
+            callback: ()=>{
+                //this.scene.start('Dead')
+                this.scene.start('Dead', [this.player.x, this.player.y]);
+            }
+        })
+        
     }
 }

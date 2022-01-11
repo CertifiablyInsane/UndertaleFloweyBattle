@@ -2,21 +2,51 @@ import Phaser from '../lib/phaser.js'
 
 export default class Dead extends Phaser.Scene
 {
+    constructor()
+    {
+        super('Dead')
+    }
+
     preload()
     {
         this.load.spritesheet('player', 'assets/soul.png', 
         {
             frameWidth: 64, frameHeight: 64
         });
+        this.load.spritesheet('shard', 'assets/soul_shard.png', 
+        {
+            frameWidth: 32, frameHeight: 32
+        });
         this.load.audio('break1', 'assets/snd/battle/snd_break1.wav')
         this.load.audio('break2', 'assets/snd/battle/snd_break2.wav')
         this.load.audio('gameover', 'assets/snd/music/mus_gameover.ogg')
     }
 
+    init(data)
+    {
+        console.log(data)
+        this.playerPos = data
+    }
+
     create()
     {
         console.log('Started Dead Scene')
-        this.player = this.add.sprite(720, 450, 'player')
+
+        this.anims.generateFrameNames('shard')
+        this.anims.create({
+            key: 'fly',
+            frames: [
+                { key: 'shard',frame:0 },
+                { key: 'shard',frame:1 },
+                { key: 'shard',frame:2 },
+                { key: 'shard',frame:1 },
+            ],
+            frameRate: 8,
+            repeat: -1,
+        });
+
+        this.player = this.add.sprite(this.playerPos[0], this.playerPos[1], 'player')
+        .setScale(0.75)
         this.keyZ = this.input.keyboard.addKey('Z');
         this.snd_break1 = this.sound.add('break1', { volume: 0.6, loop: false, });
         this.snd_break2 = this.sound.add('break2', { volume: 0.7, loop: false, });
@@ -38,8 +68,15 @@ export default class Dead extends Phaser.Scene
                         this.player.destroy()
                         this.snd_break2.play()
 
+                        for (let i = 0; i < 5; i++) {
+                            let shard = this.physics.add.sprite(this.playerPos[0], this.playerPos[1], 'shard')
+                            shard.play('fly')
+                            shard.setVelocity(Phaser.Math.Between(-200, 200), Phaser.Math.Between(-800, -400))
+                            shard.setGravityY(600)                         
+                        }
+
                         this.time.addEvent({
-                            delay: 2000,
+                            delay: 3000,
                             loop: false,
                             callback: ()=>{
 

@@ -44,6 +44,7 @@ export default class BattleFramework extends Phaser.Scene
         this.load.audio('mus_flowey', 'assets/snd/music/mus_flowey.mp3')
 
         this.load.audio('hurt', 'assets/snd/battle/snd_hurt1.wav')
+        this.load.audio('break2', 'assets/snd/battle/snd_break2.wav')
 
         this.load.audio('select1', 'assets/snd/menu/snd_select1.wav')
         this.load.audio('select2', 'assets/snd/menu/snd_select2.wav')
@@ -109,6 +110,7 @@ export default class BattleFramework extends Phaser.Scene
         this.pressReset = true;
         this.totalPlayerHP = 20;
         this.currentPlayerHP = 20;
+        this.damageFrameOverride = 0
 
         this.keyZ = this.input.keyboard.addKey('Z');
         this.keyX = this.input.keyboard.addKey('X');
@@ -117,11 +119,11 @@ export default class BattleFramework extends Phaser.Scene
         //SCENE CREATION//
         //////////////////
 
-        this.add.image(720, 450, 'background');
+        this.add.image(720, 450, 'background')
 
         this.player = this.physics.add.sprite(896, 560, 'player')
             .setCollideWorldBounds(true)
-            .setDepth(1)
+            .setDepth(10)
             .setScale(0.75)
 
             this.player.body.setSize(40, 40, true)
@@ -140,7 +142,8 @@ export default class BattleFramework extends Phaser.Scene
             .setFrame(6)
 
         this.boxhelper = this.add.sprite(720, 612, 'box_helper')
-            .setVisible(false)
+        this.boxhelper.alpha = 0.05
+        //.setVisible(false)
         this.boxEdges = [
             this.physics.add.staticSprite(590, 612, 'battle_box_lr'), //592 - 2 for origin
             this.physics.add.staticSprite(850, 612, 'battle_box_lr'),
@@ -218,6 +221,7 @@ export default class BattleFramework extends Phaser.Scene
         this.snd_damage = this.sound.add('damage', { volume: 0.8, loop: false, });
 
         this.snd_hurt = this.sound.add('hurt', { volume: 0.6, loop: false, });
+        this.snd_break2 = this.sound.add('break2', { volume: 0.7, loop: false, });
         
         this.snd_text = this.sound.add('text', { volume: 0.6, loop: false, });
         this.mus_flowey = this.sound.add('mus_flowey', { volume: 0.7, loop: true, });
@@ -576,8 +580,12 @@ export default class BattleFramework extends Phaser.Scene
     }
     onDamaged()
     {
-        this.currentPlayerHP = this.currentPlayerHP - 3;
-        console.log(this.currentPlayerHP)
+        if(this.damageFrameOverride == 0)
+        {
+            this.damageFrameOverride++;
+            this.currentPlayerHP = this.currentPlayerHP - 20;
+            console.log(this.currentPlayerHP)
+        }
 
         this.updateHealth()
     
@@ -589,6 +597,7 @@ export default class BattleFramework extends Phaser.Scene
             delay: 1250,
             callback: ()=>{
                 this.bulletOverlap.active = true
+                this.damageFrameOverride = 0;
             },
             loop: false
         });
@@ -725,12 +734,14 @@ export default class BattleFramework extends Phaser.Scene
                     props: {
                         scaleX: { value: 4.25, duration: 300, ease: 'Linear' },
                         scaleY: {value: 1, duration: 100, ease: 'Linear'},
+                        y: { value: 612, duration: 100, ease: 'Linear'},
                     },
                 });
                 this.tweens.add({
                     targets: this.boxEdges[0],
                     props: {
                         x: { value: 178, duration: 300, ease: 'Linear' },
+                        y: { value: 612, duration: 100, ease: 'Linear'},
                         scaleY: {value: 1, duration: 100, ease: 'Linear'},
                     },
                 });
@@ -738,6 +749,7 @@ export default class BattleFramework extends Phaser.Scene
                     targets: this.boxEdges[1],
                     props: {
                         x: { value: 1262, duration: 300, ease: 'Linear' },
+                        y: { value: 612, duration: 100, ease: 'Linear'},
                         scaleY: {value: 1, duration: 100, ease: 'Linear'},
                     },
                 });
@@ -755,6 +767,12 @@ export default class BattleFramework extends Phaser.Scene
                         y: { value: 738, duration: 100, ease: 'Linear' },
                     },
                 });
+                this.tweens.add({
+                    targets: this.flowey,
+                    props: {
+                        y: { value: 256, duration: 100, ease: 'Linear' },
+                    },
+                });
             break;
             case 'square':
                 this.tweens.add({
@@ -762,12 +780,14 @@ export default class BattleFramework extends Phaser.Scene
                     props: {
                         scaleX: { value: 1, duration: 300, ease: 'Linear' },
                         scaleY: {value: 1, duration: 100, ease: 'Linear'},
+                        y: { value: 612, duration: 100, ease: 'Linear'},
                     },
                 });
                 this.tweens.add({
                     targets: this.boxEdges[0],
                     props: {
                         x: { value: 594, duration: 300, ease: 'Linear' },
+                        y: { value: 612, duration: 100, ease: 'Linear'},
                         scaleY: {value: 1, duration: 100, ease: 'Linear'},
                     },
                 });
@@ -775,6 +795,7 @@ export default class BattleFramework extends Phaser.Scene
                     targets: this.boxEdges[1],
                     props: {
                         x: { value: 846, duration: 300, ease: 'Linear' },
+                        y: { value: 612, duration: 100, ease: 'Linear'},
                         scaleY: {value: 1, duration: 100, ease: 'Linear'},
                     },
                 });
@@ -797,29 +818,72 @@ export default class BattleFramework extends Phaser.Scene
                 this.tweens.add({
                     targets: this.boxhelper,
                     props: {
-                        scaleX: { value: 1, duration: 300, ease: 'Linear' },
+                        scaleX: { value: 1.5, duration: 300, ease: 'Linear' },
                         scaleY: {value: 1, duration: 100, ease: 'Linear'},
+                        y: { value: 612, duration: 100, ease: 'Linear'},
                     },
                 });
                 this.tweens.add({
                     targets: this.boxEdges[0],
                     props: {
-                        x: { value: 594, duration: 300, ease: 'Linear' },
+                        x: { value: 530, duration: 300, ease: 'Linear' },
+                        y: { value: 612, duration: 100, ease: 'Linear'},
                         scaleY: {value: 1, duration: 100, ease: 'Linear'},
                     },
                 });
                 this.tweens.add({
                     targets: this.boxEdges[1],
                     props: {
-                        x: { value: 846, duration: 300, ease: 'Linear' },
+                        x: { value: 910, duration: 300, ease: 'Linear' },
+                        y: { value: 612, duration: 100, ease: 'Linear'},
                         scaleY: {value: 1, duration: 100, ease: 'Linear'},
                     },
                 });
                 this.tweens.add({
                     targets: this.boxEdges[2],
                     props: {
-                        scaleX: { value: 1, duration: 300, ease: 'Linear' },
+                        scaleX: { value: 1.5, duration: 300, ease: 'Linear' },
                         y: { value: 486, duration: 100, ease: 'Linear' },
+                    },
+                });
+                this.tweens.add({
+                    targets: this.boxEdges[3],
+                    props: {
+                        scaleX: { value: 1.5, duration: 300, ease: 'Linear' },
+                        y: { value: 738, duration: 100, ease: 'Linear' },
+                    },
+                });
+            break;
+            case 'tall384':
+                this.tweens.add({
+                    targets: this.boxhelper,
+                    props: {
+                        scaleX: { value: 1, duration: 300, ease: 'Linear' },
+                        scaleY: {value: 1.5, duration: 100, ease: 'Linear'},
+                        y: { value: 548, duration: 100, ease: 'Linear'},
+                    },
+                });
+                this.tweens.add({
+                    targets: this.boxEdges[0],
+                    props: {
+                        x: { value: 594, duration: 300, ease: 'Linear' },
+                        y: { value: 548, duration: 100, ease: 'Linear'},
+                        scaleY: {value: 1.5, duration: 100, ease: 'Linear'},
+                    },
+                });
+                this.tweens.add({
+                    targets: this.boxEdges[1],
+                    props: {
+                        x: { value: 846, duration: 300, ease: 'Linear' },
+                        y: { value: 548, duration: 100, ease: 'Linear'},
+                        scaleY: {value: 1.5, duration: 100, ease: 'Linear'},
+                    },
+                });
+                this.tweens.add({
+                    targets: this.boxEdges[2],
+                    props: {
+                        scaleX: { value: 1, duration: 300, ease: 'Linear' },
+                        y: { value: 358, duration: 100, ease: 'Linear' },
                     },
                 });
                 this.tweens.add({
@@ -827,6 +891,12 @@ export default class BattleFramework extends Phaser.Scene
                     props: {
                         scaleX: { value: 1, duration: 300, ease: 'Linear' },
                         y: { value: 738, duration: 100, ease: 'Linear' },
+                    },
+                });
+                this.tweens.add({
+                    targets: this.flowey,
+                    props: {
+                        y: { value: 192, duration: 100, ease: 'Linear' },
                     },
                 });
             break;
