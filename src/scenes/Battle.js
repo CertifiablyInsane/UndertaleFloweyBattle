@@ -57,7 +57,7 @@ export default class Battle extends BattleFramework
 
         this.numItems = 4
 
-        this.monsterStage = 0;
+        this.monsterStage = 12;
 
         this.bullets = this.physics.add.group()
         this.bulletOverlap = this.physics.add.overlap(this.player, this.bullets,this.onDamaged,()=>true,this)
@@ -288,22 +288,89 @@ export default class Battle extends BattleFramework
             this.snd_swing.play()
             let slash = this.add.sprite(720, 256, 'slash')
             slash.play('swing')
-            this.flowey.play('disappear')
-            this.time.addEvent({
-                delay: 1500,
-                callback: ()=>{
+
+            if(this.monsterStage < 12 || this.monsterStage > 17)
+            {
+                this.flowey.play('disappear')
+                this.time.addEvent({
+                    delay: 1500,
+                    callback: ()=>{
+                        this.flowey.play('appear')
+                        this.time.addEvent({
+                            delay: 500,
+                            callback: ()=>{
+                                fightbar_indicator.destroy()
+                                fightbar.destroy()
+                                slash.destroy()
+                                this.monsterSpeak(this.monsterStage)
+                            }
+                        })
+                    }
+                })
+            }else{
+                var animNum = this.monsterStage - 10 //returns number for hurt1, hurt2, etc
+                if(this.monsterStage == 12)
+                {
                     this.flowey.play('appear')
                     this.time.addEvent({
                         delay: 500,
                         callback: ()=>{
-                            fightbar_indicator.destroy()
-                            fightbar.destroy()
-                            slash.destroy()
-                            this.monsterSpeak(this.monsterStage)
+                            this.flowey.play('hurt1')
+                            this.tweens.add({
+                                targets: this.mus_flowey,
+                                volume: 0,
+                                duration: 2000
+                            })
                         }
                     })
                 }
-            })
+                this.monsterStage++;
+                
+                this.time.addEvent({
+                    delay: 1000,
+                    callback: ()=>{
+                        
+                        this.snd_damage.play()
+                        this.flowey.play('hurt'+animNum);
+                        if(this.monsterStage == 17)
+                        {
+                            this.cameras.main.fade(0)
+                        }
+
+                        //shake
+                        var shakeAmount = 32
+                        this.time.addEvent({
+                            delay: 150,
+                            repeat: 8,
+                            callback: ()=>{
+                                this.flowey.x = 720 + shakeAmount
+                                shakeAmount = shakeAmount - 2
+                            }
+                        })
+                        this.time.addEvent({
+                            delay: 150,
+                            startAt:75,
+                            repeat: 8,
+                            callback: ()=>{
+                                this.flowey.x = 720 - shakeAmount
+                                shakeAmount = shakeAmount - 2
+                            }
+                        })
+
+                        //end shake
+
+                        this.time.addEvent({
+                            delay: 1500,
+                            callback: ()=>{
+                                fightbar_indicator.destroy()
+                                fightbar.destroy()
+                                slash.destroy()
+                                this.monsterSpeak(this.monsterStage)
+                            }
+                        })
+                    }
+                })
+            }
         })   
     }
 
@@ -353,9 +420,14 @@ export default class Battle extends BattleFramework
         console.log("Spare")
         this.clearMenu()
         this.mercyButton.setFrame(6);
-        if(this.monsterIsSpareable)
+        if(this.monsterStage == 12)
         {
-            //spare
+            this.monsterStage == 18
+            this.flowey.play('appear')
+        }
+        if(this.monsterStage > 17)
+        {
+            this.monsterStage++
         }
         this.textSequence(null, null)
     }
@@ -429,6 +501,9 @@ export default class Battle extends BattleFramework
 
             break;
             case 16:
+
+            break;
+            case 17:
 
             break;
         }
@@ -654,12 +729,18 @@ export default class Battle extends BattleFramework
                 callback: ()=>{
                     this.controlType = 'menu1'
                     this.generateMenu()
+                    if(this.monsterStage < 12)
+                    {
+                        this.monsterStage++; //Increment monster stages < 12
+                    }
     
                     //disable all attack related stuffs
                     this.bullets.clear(true, true);
                     this.bulletOverlap.active = false
-                    this.bulletMaker.remove()
-                    this.monsterStage++; //Increment monster stage
+                    if(attackParam){
+                        this.bulletMaker.remove()
+                    }
+
                     if(attackParam == 'shooter'){
                         this.bulletLooper.remove()
                     }
@@ -694,6 +775,66 @@ export default class Battle extends BattleFramework
                     break;
                 case 2:
                     returnText = 'You feel like sample text'
+            }
+        }
+        if(categoryParam == 'FLAVOUR_TEXT')
+        {
+            switch(textParam)
+            {
+                case 0:
+                    returnText = 'Flowey is eager to fight'
+                    break;
+                case 1:
+                    returnText = 'Yellow petals fill the air'
+                    break;
+                case 2:
+                    returnText = 'You feel vines crawling on your\nback'
+                    break;
+                case 3:
+                    returnText = `Flowey prepares an attack of...\n'friendliness pellets'`
+                    break;
+                case 4:
+                    returnText = 'Flowey smiles menacingly'
+                    break;
+                case 5:
+                    returnText = 'Flowey is getting angrier'
+                    break;
+                case 6:
+                    returnText = 'Smells like floral sweat'
+                    break;
+                case 7:
+                    returnText = `Flowey considers putting the\n'petal to the metal'\nHe then decides against this`
+                    break;
+                case 8:
+                    returnText = 'Flowey seems surprised you are\nstill alive'
+                    break;
+                case 9:
+                    returnText = 'Smells like a garden'
+                    break;
+                case 10:
+                    returnText = 'Flowey seems to be getting tired'
+                    break;
+                case 11:
+                    returnText = 'Flowey looks like he needs a break'
+                    break;
+                case 12:
+                    returnText = 'Flowey has not emerged'
+                    break;
+                case 13:
+                    returnText = 'Flowey is in pain'
+                    break;
+                case 14:
+                    returnText = '...'
+                    break;
+                case 15:
+                    returnText = '...'
+                    break;
+                case 16:
+                    returnText = '...'
+                    break;
+                case 17:
+                    returnText = '...'
+                    break;
             }
         }
         if(categoryParam == 'ACT')
@@ -770,7 +911,35 @@ export default class Battle extends BattleFramework
                     returnText[0] = `smug | Oh, but it wasn't\n just once.`
                     returnText[1] = `angry | OVER AND OVER\nAND OVER.`
                 break;
-            }
+                case 13: //beginning of fight ending
+                    returnText[0] = `hurt2 | Th- the...`
+                    returnText[1] = `hurt2 | The... pain...`
+                break;
+                case 14: returnText[0] = `hurt3 | P-please...`
+                case 18: //beginning of mercy ending
+                    returnText[0] = `sheepish | Huff... puff...`
+                    returnText[1] = `smile | You're still not\nfighting back, huh?`
+                break;
+                case 19:
+                    returnText[0] = `smug | Well... huff...\nthat's fine.`
+                    returnText[1] = `evil | Easier to kill\nsomeone who isn't\na threat!`
+                break;
+                case 20:
+                    returnText[0] = `frown | Huff... that said...`
+                    break;
+                case 21:
+                    returnText[0] = `lookaway | Maybe I should...`
+                    returnText[1] = `sheepish | Just kill you sometime\nlater`
+                    break;
+                case 22:
+                    returnText[0] = `lookaway | When I'm a little less...`
+                    returnText[1] = `wink | Exhausted.`
+                    break;
+                case 23:
+                    returnText[0] = `sinister | Don't think you've\nwon, though.`
+                    returnText[1] = `evil | I'll be back.`
+                    break;
+                }
         }
         return returnText;
     }

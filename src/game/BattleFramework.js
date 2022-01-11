@@ -142,8 +142,8 @@ export default class BattleFramework extends Phaser.Scene
             .setFrame(6)
 
         this.boxhelper = this.add.sprite(720, 612, 'box_helper')
-        this.boxhelper.alpha = 0.05
-        //.setVisible(false)
+        //this.boxhelper.alpha = 0.05
+        .setVisible(false)
         this.boxEdges = [
             this.physics.add.staticSprite(590, 612, 'battle_box_lr'), //592 - 2 for origin
             this.physics.add.staticSprite(850, 612, 'battle_box_lr'),
@@ -226,7 +226,9 @@ export default class BattleFramework extends Phaser.Scene
         this.snd_text = this.sound.add('text', { volume: 0.6, loop: false, });
         this.mus_flowey = this.sound.add('mus_flowey', { volume: 0.7, loop: true, });
 
-        //this.mus_flowey.play()
+        this.mus_flowey.play()
+        
+        this.mus_flowey.pause()
 
     }
 
@@ -480,7 +482,7 @@ export default class BattleFramework extends Phaser.Scene
                 delay: 300,
                 callback: ()=>{
                     this.star = this.add.sprite(240, 548, 'star')
-                    this.typeText('flavourText', this.generateText('SAMPLE', 0))
+                    this.typeText('flavourText', this.generateText('FLAVOUR_TEXT', this.monsterStage))
                 }
             })
         }else if(this.controlType == 'menu2')
@@ -583,7 +585,7 @@ export default class BattleFramework extends Phaser.Scene
         if(this.damageFrameOverride == 0)
         {
             this.damageFrameOverride++;
-            this.currentPlayerHP = this.currentPlayerHP - 20;
+            this.currentPlayerHP = this.currentPlayerHP - 3;
             console.log(this.currentPlayerHP)
         }
 
@@ -718,8 +720,6 @@ export default class BattleFramework extends Phaser.Scene
                 }
             })
         }else{
-            text.destroy()
-            textbox.destroy()
             this.monsterAttack('generic', 5000)
         }
         
