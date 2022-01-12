@@ -196,6 +196,15 @@ export default class Battle extends BattleFramework
             ]
         });
         this.anims.create({
+            key: 'evil_laugh',
+            frames: [
+                { key: 'flowey', frame: 13},
+                { key: 'flowey', frame: 26},
+            ],
+            frameRate: 12,
+            repeat: -1
+        });
+        this.anims.create({
             key: 'hurt1',
             frames: [
                 { key: 'flowey', frame: 14}
@@ -335,6 +344,13 @@ export default class Battle extends BattleFramework
                         if(this.monsterStage == 17)
                         {
                             this.cameras.main.fade(0)
+                            this.controlType = 'noControl'
+                            this.time.addEvent({
+                                delay: 1000,
+                                callback: ()=>{
+                                    this.scene.start('End')
+                                }
+                            })
                         }
 
                         //shake
@@ -418,18 +434,46 @@ export default class Battle extends BattleFramework
     doMercy()
     {
         console.log("Spare")
+        this.player.setVisible(false)
+        this.controlType = 'noControl'
         this.clearMenu()
         this.mercyButton.setFrame(6);
         if(this.monsterStage == 12)
         {
-            this.monsterStage == 18
+            this.monsterStage = 17
             this.flowey.play('appear')
+            this.time.addEvent({
+                delay: 500,
+                callback: ()=>{
+                    this.monsterSpeak(this.monsterStage)
+                }
+            })
         }
-        if(this.monsterStage > 17)
+        if(this.monsterStage > 16)
         {
             this.monsterStage++
         }
-        this.textSequence(null, null)
+        if(this.monsterStage != 24 && this.monsterStage != 18){
+            this.monsterSpeak(this.monsterStage)
+        }else if(this.monsterStage == 24){
+            this.player.setVisible(false)
+            this.controlType = 'noControl'
+            this.flowey.play('evil_laugh')
+            this.snd_floweylaugh.play()
+            this.time.addEvent({
+                delay: 4000,
+                callback: ()=>{
+                    this.flowey.play('disappear')
+                    this.cameras.main.fadeOut(4000)
+                    this.time.addEvent({
+                        delay: 6000,
+                        callback: ()=>{
+                            this.scene.start('End')
+                        }
+                    })
+                }
+            })
+        }
     }
 
     monsterAttack()
@@ -486,6 +530,7 @@ export default class Battle extends BattleFramework
 
             break;
             case 11:
+                this.flowey.play('disappear')
 
             break;
             case 12:
@@ -727,8 +772,17 @@ export default class Battle extends BattleFramework
             this.time.addEvent({
                 delay: length,
                 callback: ()=>{
+                    this.player.setVisible(false)
                     this.controlType = 'menu1'
                     this.generateMenu()
+                    this.controlType = 'noControl'
+                    this.time.addEvent({
+                        delay: 300,
+                        callback: ()=>{
+                            this.controlType = 'menu1'
+                            this.player.setVisible(true)
+                        }
+                    })
                     if(this.monsterStage < 12)
                     {
                         this.monsterStage++; //Increment monster stages < 12
@@ -835,6 +889,24 @@ export default class Battle extends BattleFramework
                 case 17:
                     returnText = '...'
                     break;
+                case 18:
+                    returnText = 'Flowey is beyond exhausted'
+                    break;
+                case 19:
+                    returnText = 'Flowey is beyond exhausted'
+                    break;
+                case 20:
+                    returnText = 'Flowey is beyond exhausted'
+                    break;
+                case 21:
+                    returnText = `Flowey doesn't seem to want to\nfight anymore`
+                    break;
+                case 22:
+                    returnText = `Flowey doesn't seem to want to\nfight anymore`
+                    break;
+                case 23:
+                    returnText = 'Flowey is sparing you'
+                    break;
             }
         }
         if(categoryParam == 'ACT')
@@ -904,7 +976,7 @@ export default class Battle extends BattleFramework
                 break;
                 case 4:
                     returnText[0] = `lookaway | Imagine if someone\ngave you your\nlife back...`
-                    returnText[1] = `frown | Only to take it all\naway at the last second.`
+                    returnText[1] = `frown | Only to take it all\naway at the last\nsecond.`
                     returnText[2] = `smug | Sound familiar?`
                 break;
                 case 5:
@@ -916,6 +988,7 @@ export default class Battle extends BattleFramework
                     returnText[1] = `hurt2 | The... pain...`
                 break;
                 case 14: returnText[0] = `hurt3 | P-please...`
+                break;
                 case 18: //beginning of mercy ending
                     returnText[0] = `sheepish | Huff... puff...`
                     returnText[1] = `smile | You're still not\nfighting back, huh?`
@@ -929,10 +1002,10 @@ export default class Battle extends BattleFramework
                     break;
                 case 21:
                     returnText[0] = `lookaway | Maybe I should...`
-                    returnText[1] = `sheepish | Just kill you sometime\nlater`
+                    returnText[1] = `sheepish | Just kill you\nsometime later`
                     break;
                 case 22:
-                    returnText[0] = `lookaway | When I'm a little less...`
+                    returnText[0] = `lookaway | When I'm a little\nless...`
                     returnText[1] = `wink | Exhausted.`
                     break;
                 case 23:

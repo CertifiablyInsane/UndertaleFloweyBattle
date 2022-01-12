@@ -5,7 +5,7 @@ However, he does what he does because he is bored. Flowey is aware his life is a
 In this timeline, the player has played the game so many times, giving the characters happy endings, sad endings, awful endings, that Flowey is even bored of that. He no longer wishes
 for you to play anymore. He just wants you to put the game to rest. But you're not going to do that, are you? You have to see what happens if you continue.
 
-In this game, you can FIGHT or SPARE to win. The path of violence is a decision, and a necessity. You may ACT to learn information and use ITEMs to heal.
+In this game, you can FIGHT or SPARE to win. The path of violence is a decision, not a necessity. You may ACT to learn information and use ITEMs to heal.
 
 credits
 https://soundcloud.com/joandr861/floral-defiance-flowey-battle-theme
