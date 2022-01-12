@@ -702,21 +702,21 @@ export default class BattleFramework extends Phaser.Scene
                                 this.monsterText_looper.destroy()
                                 this.monsterSpeak_looper.destroy()
                                 textbox.destroy()
-                                this.monsterAttack('generic', 5000)
+                                this.monsterAttack()
                             })
                         }else{
                             this.monsterText.destroy()
                             this.monsterText_looper.destroy()
                             this.monsterSpeak_looper.destroy()
                             textbox.destroy()
-                            this.monsterAttack('generic', 5000)
+                            this.monsterAttack()
                         }
 
                     })
                 }else{
                     this.monsterText.destroy()
                     textbox.destroy()
-                    this.monsterAttack('generic', 5000)
+                    this.monsterAttack()
                 }
             })
         }else{

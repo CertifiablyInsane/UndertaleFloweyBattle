@@ -281,7 +281,7 @@ export default class Battle extends BattleFramework
             .setScale(2)
         let fightbar_indicator = this.physics.add.sprite(192, 612, 'fightbar_indicator');
         this.physics.moveTo(fightbar_indicator, 1262, 612, undefined, 1500)
-        let missTimer = this.time.addEvent({
+        let missTimer = this.time.addEvent({ //ASKJDHASHDJKASHDJKHASJKDH
             delay: 1500,
             callback: ()=>{
                 fightbar_indicator.destroy()
@@ -545,11 +545,11 @@ export default class Battle extends BattleFramework
                 length = 15000
             break;
             case 12:
-                attackParam = 'wimpy'
-                length = 2000
+
             break;
             case 13:
-
+                attackParam = 'wimpy'
+                length = 2000
             break;
             case 14:
 
@@ -728,7 +728,7 @@ export default class Battle extends BattleFramework
                 var spawnMax
                 this.setBoxSize('rect384')
                     this.bulletMaker = this.time.addEvent({
-                        delay: Phaser.Math.Between(125, 500),
+                        delay: Phaser.Math.Between(350, 500),
                         loop: true,
                         callback: ()=>{
                             var spawn = Phaser.Math.Between(656, 784);
@@ -1074,6 +1074,32 @@ export default class Battle extends BattleFramework
                 case 5:
                     returnText[0] = `smug | Oh, but it wasn't\n just once.`
                     returnText[1] = `angry | OVER AND OVER\nAND OVER.`
+                break;
+                case 6:
+                    returnText[0] = `frown | I'm just so tired\nof the same thing\nhappening every\ntime.`
+                    returnText[1] = `smile | You make friends,\nwe all escape,\nand it all resets.`
+                break;
+                case 7:
+                    returnText[0] = `lookaway | So, I thought,\nwhy don't we do\nsomething...`
+                    returnText[1] = `sheepish | Different.`
+                break;
+                case 8:
+                    returnText[0] = `sinister | I'll make you work\nfor your ending\nthis time.`
+                    returnText[1] = `smug | Or, at the very\nleast, change the\nresult.`
+                break;
+                case 9:
+                    returnText[0] = `wink | Boy, you're still\ngoing, huh?`
+                    returnText[1] = `smug | Best not strain\nyourself!`
+                break;
+                case 10:
+                    returnText[0] = `smile | Huh, me?`
+                    returnText[1] = `lookaway | No, I'm not\ngetting tired.`
+                    returnText[2] = `sheepish | ...`
+                break;
+                case 11:
+                    returnText[0] = `sinister | I'm still full of\nenergy!`
+                    returnText[1] = `evil | This is only the\nbeginning.`
+                    returnText[2] = `sheepish | I don't...\nHuff...\nneed a break...`
                 break;
                 case 13: //beginning of fight ending
                     returnText[0] = `hurt2 | Th- the...`
