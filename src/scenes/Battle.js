@@ -57,7 +57,7 @@ export default class Battle extends BattleFramework
 
         this.numItems = 4
 
-        this.monsterStage = 12;
+        this.monsterStage = 0;
 
         this.bullets = this.physics.add.group()
         this.bulletOverlap = this.physics.add.overlap(this.player, this.bullets,this.onDamaged,()=>true,this)
@@ -445,6 +445,11 @@ export default class Battle extends BattleFramework
             this.time.addEvent({
                 delay: 500,
                 callback: ()=>{
+                    this.tweens.add({
+                        targets: this.mus_flowey,
+                        duration: 2000,
+                        volume: 0
+                    })
                     this.monsterSpeak(this.monsterStage)
                 }
             })
@@ -466,7 +471,7 @@ export default class Battle extends BattleFramework
                     this.flowey.play('disappear')
                     this.cameras.main.fadeOut(4000)
                     this.time.addEvent({
-                        delay: 6000,
+                        delay: 5000,
                         callback: ()=>{
                             this.scene.start('End')
                         }
@@ -482,11 +487,11 @@ export default class Battle extends BattleFramework
         var length;
         this.controlType = 'freemove'
         this.generateMenu()
-        this.player.setPosition(720, 534);
+        this.player.setPosition(720, 612);
         this.player.setVisible(true)
         
         //MANUAL OVERRIDE FOR DEBUG
-        //this.monsterStage = 4
+        //this.monsterStage = 12
                 
         switch(this.monsterStage)
         {
@@ -507,34 +512,41 @@ export default class Battle extends BattleFramework
                 length = 15000
             break;
             case 4: //Gave your life back
-                attackParam = 'sidetoside'
-                length = 10000
+                attackParam = 'shooter_side'
+                length = 7500
             break;
             case 5: //Over and over
                 attackParam = 'rain_fast'
                 length = 10000
             break;
             case 6:
-
+                attackParam = 'sidetoside'
+                length = 10000
             break;
             case 7:
-
+                attackParam = 'horizcross'
+                length = 7500
             break;
             case 8:
-
+                attackParam = 'shooter_side'
+                length = 15000
             break;
             case 9:
-
+                attackParam = 'warning'
+                length = 15000
             break;
             case 10:
-
+                attackParam = 'shooter'
+                length = 15000
             break;
             case 11:
                 this.flowey.play('disappear')
-
+                attackParam = 'rain_fast'
+                length = 15000
             break;
             case 12:
-
+                attackParam = 'wimpy'
+                length = 2000
             break;
             case 13:
 
@@ -622,6 +634,13 @@ export default class Battle extends BattleFramework
                                 .setScale(1.5)
                                 .setBodySize(20, 20)
                                 .anims.play('idle')
+                            this.bullet.alpha = 0
+
+                            this.tweens.add({
+                                targets: this.bullet,
+                                duration: 250,
+                                alpha: 1
+                            })
                             
                             this.bullets.add(this.bullet)
                             this.physics.moveTo(this.bullet, destination, spawn, undefined, 1750)
@@ -634,15 +653,23 @@ export default class Battle extends BattleFramework
                 this.setBoxSize('rect384')
                 this.bulletLooper = this.time.addEvent({
                     delay: 1000,
-                    startAt: 900,
+                    startAt: 600,
                     callback: ()=>{
                         this.bulletMaker = this.time.addEvent({
                             delay: 40,
                             callback: ()=>{
-                                this.bullet = this.physics.add.sprite(720, 256, 'bullet')
+                                this.bullet = this.physics.add.sprite(Phaser.Math.Between(656, 784), 128, 'bullet')
                                     .setScale(1)
                                     .setBodySize(16, 16)
                                     .anims.play('idle')
+                                this.bullet.alpha = 0
+
+                                this.tweens.add({
+                                    targets: this.bullet,
+                                    duration: 250,
+                                    alpha: 1
+                                })
+                                this.snd_spawn.play()
                                     
                                 this.bullets.add(this.bullet)
                                 this.physics.moveTo(this.bullet, this.player.x, this.player.y, 384)
@@ -652,6 +679,46 @@ export default class Battle extends BattleFramework
                         });
                     },
                     loop: true
+                })
+            break;
+            case 'shooter_side':
+                this.setBoxSize('flavourText')
+                this.bulletMaker = this.time.addEvent({
+                    delay: 500,
+                    repeat: -1,
+                    callback: ()=>{
+                        this.bullet = this.physics.add.sprite(64, Phaser.Math.Between(420, 804), 'bullet')
+                        .setBodySize(16, 16)
+                        .anims.play('idle')
+                    this.bullet.alpha = 0
+
+                    this.tweens.add({
+                        targets: this.bullet,
+                        duration: 250,
+                        alpha: 1
+                    })
+                    this.bullets.add(this.bullet)
+                    this.physics.moveTo(this.bullet, this.player.x, this.player.y, 256)
+                    }
+                })
+                this.bulletMakerExtra = this.time.addEvent({
+                    delay: 500,
+                    startAt: 250,
+                    repeat: -1,
+                    callback: ()=>{
+                        this.bullet = this.physics.add.sprite(1376, Phaser.Math.Between(420, 804), 'bullet')
+                        .setBodySize(16, 16)
+                        .anims.play('idle')
+                    this.bullet.alpha = 0
+
+                    this.tweens.add({
+                        targets: this.bullet,
+                        duration: 250,
+                        alpha: 1
+                    })
+                    this.bullets.add(this.bullet)
+                    this.physics.moveTo(this.bullet, this.player.x, this.player.y, 256)
+                    }
                 })
             break;
             case 'warning':
@@ -757,12 +824,34 @@ export default class Battle extends BattleFramework
                                 this.bullet = this.physics.add.sprite(840 - (i * 16), 292, 'bullet')
                                     .setBodySize(16, 16)
                                     .anims.play('idle')   
+                                this.bullet.alpha = 0
+            
+                                this.tweens.add({
+                                    targets: this.bullet,
+                                    duration: 250,
+                                    alpha: 1
+                                })
                                 this.bullets.add(this.bullet)
                                 this.physics.moveTo(this.bullet, 840 - (i * 16), 804, undefined, 3000)                                                          
                             }                                                            
                         },
                         loop: true
                     });
+            break;
+            case 'wimpy':
+                this.setBoxSize('square')
+                this.bullet = this.physics.add.sprite(800, 512, 'bullet')
+                    .setBodySize(16, 16)
+                    .anims.play('idle')   
+                this.bullet.alpha = 0
+
+                this.tweens.add({
+                    targets: this.bullet,
+                    duration: 250,
+                    alpha: 1
+                })
+                this.bullets.add(this.bullet)
+                this.physics.moveTo(this.bullet, this.player.x, this.player.y, undefined, 10000) 
             break;
             }
                 
@@ -797,6 +886,9 @@ export default class Battle extends BattleFramework
 
                     if(attackParam == 'shooter'){
                         this.bulletLooper.remove()
+                    }
+                    if(attackParam == 'shooter_side'){
+                        this.bulletMakerExtra.remove()
                     }
                     else if(attackParam == 'warning')
                     {
@@ -987,7 +1079,9 @@ export default class Battle extends BattleFramework
                     returnText[0] = `hurt2 | Th- the...`
                     returnText[1] = `hurt2 | The... pain...`
                 break;
-                case 14: returnText[0] = `hurt3 | P-please...`
+                case 14: 
+                    returnText[0] = `hurt3 | P-please...`
+                    returnText[1] = `hurt3 | ...`
                 break;
                 case 18: //beginning of mercy ending
                     returnText[0] = `sheepish | Huff... puff...`
@@ -998,20 +1092,21 @@ export default class Battle extends BattleFramework
                     returnText[1] = `evil | Easier to kill\nsomeone who isn't\na threat!`
                 break;
                 case 20:
-                    returnText[0] = `frown | Huff... that said...`
-                    break;
+                    returnText[0] = `frown | Huff...\nPuff...`
+                    returnText[1] = `frown | Huff... that said...`
+                break;
                 case 21:
                     returnText[0] = `lookaway | Maybe I should...`
                     returnText[1] = `sheepish | Just kill you\nsometime later`
-                    break;
+                break;
                 case 22:
                     returnText[0] = `lookaway | When I'm a little\nless...`
                     returnText[1] = `wink | Exhausted.`
-                    break;
+                break;
                 case 23:
                     returnText[0] = `sinister | Don't think you've\nwon, though.`
                     returnText[1] = `evil | I'll be back.`
-                    break;
+                break;
                 }
         }
         return returnText;
@@ -1023,6 +1118,7 @@ export default class Battle extends BattleFramework
             delay: 1,
             callback: ()=>{
                 //this.scene.start('Dead')
+                this.mus_flowey.stop()
                 this.scene.start('Dead', [this.player.x, this.player.y]);
             }
         })

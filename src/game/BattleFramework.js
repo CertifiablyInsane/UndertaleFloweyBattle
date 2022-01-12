@@ -228,7 +228,7 @@ export default class BattleFramework extends Phaser.Scene
 
         this.mus_flowey.play()
         
-        this.mus_flowey.pause()
+        //this.mus_flowey.pause()
 
     }
 
