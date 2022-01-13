@@ -82,8 +82,8 @@ export default class Dead extends Phaser.Scene
 
                                 this.mus_gameover.play()
                                 this.cameras.main.fadeIn(2500)
-                                this.add.text(460, 0, 'GAME\nOVER', { fontFamily: 'Determination', fontSize: '256px', align: 'center' })
-                                this.add.text(384, 512, 'Press [Z] to STAY DETERMINED', { fontFamily: 'Determination', fontSize: '48px', align: 'center' })
+                                this.add.text(720, 256, 'GAME\nOVER', { fontFamily: 'Determination', fontSize: '256px', align: 'center' }).setOrigin(0.5)
+                                this.add.text(720, 512, 'Press [Z] to STAY DETERMINED', { fontFamily: 'Determination', fontSize: '48px', align: 'center' }).setOrigin(0.5)
                                 this.keyZ.on('down', ()=>{
                                     this.cameras.main.fadeOut(1500)
                                     this.tweens.add({

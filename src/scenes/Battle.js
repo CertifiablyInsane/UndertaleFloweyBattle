@@ -281,16 +281,17 @@ export default class Battle extends BattleFramework
             .setScale(2)
         let fightbar_indicator = this.physics.add.sprite(192, 612, 'fightbar_indicator');
         this.physics.moveTo(fightbar_indicator, 1262, 612, undefined, 1500)
-        let missTimer = this.time.addEvent({ //ASKJDHASHDJKASHDJKHASJKDH
+        let missTimer = this.time.addEvent({ //ASKJDHASHDJKASHDJKHASJKDH 
             delay: 1500,
             callback: ()=>{
                 fightbar_indicator.destroy()
                 fightbar.destroy()
+		        this.fightKey.destroy() //Added in ELA, check to see if works in CompSci
                 this.monsterSpeak(this.monsterStage)
             }
         })
-        let fightKey = this.keyZ.on('down', ()=>{
-            fightKey.destroy()
+            this.fightKey = this.keyZ.on('down', ()=>{
+            this.fightKey.destroy()
             missTimer.destroy()
             fightbar_indicator.setVelocity(0)
             fightbar_indicator.play('hit')
@@ -501,7 +502,7 @@ export default class Battle extends BattleFramework
             break;
             case 1: //how many times?
                 attackParam = 'horizcross'
-                length = 5000
+                length = 6000
             break;
             case 2: //You don't care
                 attackParam = 'shooter'
@@ -509,7 +510,7 @@ export default class Battle extends BattleFramework
             break;     
             case 3: //Who am I to judge
                 attackParam = 'warning'
-                length = 15000
+                length = 14000
             break;
             case 4: //Gave your life back
                 attackParam = 'shooter_side'
@@ -533,7 +534,7 @@ export default class Battle extends BattleFramework
             break;
             case 9:
                 attackParam = 'warning'
-                length = 15000
+                length = 14000
             break;
             case 10:
                 attackParam = 'shooter'
@@ -575,7 +576,7 @@ export default class Battle extends BattleFramework
                         var spawn = Phaser.Math.Between(512, 938);
                         var destination = Phaser.Math.Between(512, 938);
                         this.bullet = this.physics.add.sprite(spawn, 256, 'bullet')
-                            .setBodySize(16, 16)
+                            .setBodySize(12, 12)
                             .anims.play('idle')
                         this.bullet.alpha = 0
                             this.tweens.add({
@@ -599,7 +600,7 @@ export default class Battle extends BattleFramework
                         var spawn = Phaser.Math.Between(512, 938);
                         var destination = Phaser.Math.Between(512, 938);
                         this.bullet = this.physics.add.sprite(spawn, 256, 'bullet')
-                            .setBodySize(16, 16)
+                            .setBodySize(12, 12)
                             .anims.play('idle')
                         this.bullet.alpha = 0
                             this.tweens.add({
@@ -620,7 +621,7 @@ export default class Battle extends BattleFramework
                 this.bulletMaker = this.time.addEvent({
                     delay: 300,
                     callback: ()=>{
-                        var spawn = Phaser.Math.Between(348, 708);
+                        var spawn = Phaser.Math.Between(484, 740);
                         var side = Phaser.Math.Between(0, 1);
                         var destination
                             if(side == 0){
@@ -632,7 +633,7 @@ export default class Battle extends BattleFramework
                             }
                             this.bullet = this.physics.add.sprite(side, spawn, 'bullet')
                                 .setScale(1.5)
-                                .setBodySize(20, 20)
+                                .setBodySize(12, 12)
                                 .anims.play('idle')
                             this.bullet.alpha = 0
 
@@ -660,7 +661,7 @@ export default class Battle extends BattleFramework
                             callback: ()=>{
                                 this.bullet = this.physics.add.sprite(Phaser.Math.Between(656, 784), 128, 'bullet')
                                     .setScale(1)
-                                    .setBodySize(16, 16)
+                                    .setBodySize(12, 12)
                                     .anims.play('idle')
                                 this.bullet.alpha = 0
 
@@ -688,7 +689,7 @@ export default class Battle extends BattleFramework
                     repeat: -1,
                     callback: ()=>{
                         this.bullet = this.physics.add.sprite(64, Phaser.Math.Between(420, 804), 'bullet')
-                        .setBodySize(16, 16)
+                        .setBodySize(12, 12)
                         .anims.play('idle')
                     this.bullet.alpha = 0
 
@@ -707,7 +708,7 @@ export default class Battle extends BattleFramework
                     repeat: -1,
                     callback: ()=>{
                         this.bullet = this.physics.add.sprite(1376, Phaser.Math.Between(420, 804), 'bullet')
-                        .setBodySize(16, 16)
+                        .setBodySize(12, 12)
                         .anims.play('idle')
                     this.bullet.alpha = 0
 
@@ -734,7 +735,7 @@ export default class Battle extends BattleFramework
                             var spawn = Phaser.Math.Between(656, 784);
                             var destination = spawn
                             this.bullet = this.physics.add.sprite(spawn, 804, 'bullet')
-                                .setBodySize(16, 16)
+                                .setBodySize(12, 12)
                                 .anims.play('idle')
                             this.bullet.alpha = 0
 
@@ -776,7 +777,7 @@ export default class Battle extends BattleFramework
                                         var spawn = Phaser.Math.Between(spawnMin, spawnMax);
                                         var destination = spawn
                                         this.bullet = this.physics.add.sprite(spawn, 804, 'bullet')
-                                            .setBodySize(16, 16)
+                                            .setBodySize(12, 12)
                                             .anims.play('idle')
                                         this.bullet.alpha = 0
             
@@ -801,7 +802,7 @@ export default class Battle extends BattleFramework
                     callback: ()=>{
                             for (let i = 0; i < 8; i++) {
                                 this.bullet = this.physics.add.sprite(600 + (i * 16), 804, 'bullet')
-                                    .setBodySize(16, 16)
+                                    .setBodySize(12, 12)
                                     .anims.play('idle')   
                                 this.bullet.alpha = 0
             
@@ -822,7 +823,7 @@ export default class Battle extends BattleFramework
                     callback: ()=>{
                             for (let i = 0; i < 8; i++) {
                                 this.bullet = this.physics.add.sprite(840 - (i * 16), 292, 'bullet')
-                                    .setBodySize(16, 16)
+                                    .setBodySize(12, 12)
                                     .anims.play('idle')   
                                 this.bullet.alpha = 0
             
@@ -841,7 +842,7 @@ export default class Battle extends BattleFramework
             case 'wimpy':
                 this.setBoxSize('square')
                 this.bullet = this.physics.add.sprite(800, 512, 'bullet')
-                    .setBodySize(16, 16)
+                    .setBodySize(12, 12)
                     .anims.play('idle')   
                 this.bullet.alpha = 0
 
@@ -1145,6 +1146,7 @@ export default class Battle extends BattleFramework
             callback: ()=>{
                 //this.scene.start('Dead')
                 this.mus_flowey.stop()
+                this.player.setVisible(false)
                 this.scene.start('Dead', [this.player.x, this.player.y]);
             }
         })
