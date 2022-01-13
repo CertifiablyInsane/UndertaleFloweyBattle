@@ -7,7 +7,7 @@ h1 {
     font-size: 0;
 }
 #game {
-    border: 1px solid white;
+    border: 2px solid white;
     width: 1440px;
     height: 900px;
     margin: auto;

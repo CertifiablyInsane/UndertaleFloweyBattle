@@ -1018,7 +1018,10 @@ export default class Battle extends BattleFramework
                     returnText[1] = 'Did you really think that would\ndo anything?'
                 break;
                 case 'Cry':
-                    this.flowey.play('evil')
+                    if(this.monsterStage < 12)
+                        {
+                            this.flowey.play('evil')
+                        }
                     returnText[0] = 'You lie on your back and break\ndown into tears.'
                     returnText[1] = 'Flowey seems pleased by this.'
                 break;
