@@ -7,5 +7,6 @@ for you to play anymore. He just wants you to put the game to rest. But you're n
 
 In this game, you can FIGHT or SPARE to win. The path of violence is a decision, not a necessity. You may ACT to learn information and use ITEMs to heal.
 
-credits
+
+credits:
 https://soundcloud.com/joandr861/floral-defiance-flowey-battle-theme
