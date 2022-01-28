@@ -700,23 +700,25 @@ export default class BattleFramework extends Phaser.Scene
 
                                 this.monsterText.destroy()
                                 this.monsterText_looper.destroy()
+                                this.flowey.play(this.currentAnim)
                                 this.monsterSpeak_looper.destroy()
                                 textbox.destroy()
-                                this.monsterAttack('generic', 5000)
+                                this.monsterAttack()
                             })
                         }else{
                             this.monsterText.destroy()
                             this.monsterText_looper.destroy()
+                            this.flowey.play(this.currentAnim)
                             this.monsterSpeak_looper.destroy()
                             textbox.destroy()
-                            this.monsterAttack('generic', 5000)
+                            this.monsterAttack()
                         }
 
                     })
                 }else{
                     this.monsterText.destroy()
                     textbox.destroy()
-                    this.monsterAttack('generic', 5000)
+                    this.monsterAttack()
                 }
             })
         }else{
@@ -936,8 +938,8 @@ export default class BattleFramework extends Phaser.Scene
             case 'dialogue':
 
                 this.monsterText = this.add.text(940, 256, '', { fontFamily: 'Determination', fontSize: '32px', color: 'Black'})
-                const currentAnim = this.flowey.anims.currentAnim.key
-                this.flowey.play(currentAnim + '_talk')
+                this.currentAnim = this.flowey.anims.currentAnim.key
+                this.flowey.play(this.currentAnim + '_talk')
                 this.monsterText_looper = this.time.addEvent({
                     delay: 40,
                     repeat: textInput.length,
@@ -957,7 +959,7 @@ export default class BattleFramework extends Phaser.Scene
                 this.monsterSpeak_looper = this.time.addEvent({
                     delay: 40 * this.monsterText_looper.repeatCount,
                     callback: ()=>{
-                        this.flowey.play(currentAnim)
+                        this.flowey.play(this.currentAnim)
                     },
                 })
             break;

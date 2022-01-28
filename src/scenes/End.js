@@ -20,6 +20,7 @@ export default class End extends Phaser.Scene
     create()
     {
         this.mus_boom = this.sound.add('mus_intronoise', { volume: 0.7, loop: false, });
+        this.keyZ = this.input.keyboard.addKey('Z');
 
         this.time.addEvent({
             delay: 5000,
@@ -46,6 +47,10 @@ export default class End extends Phaser.Scene
                 this.text2.destroy()
                 this.mus_boom.play()
                 this.text1 = this.add.text(720, 450, 'THE END', { fontFamily: 'Determination', fontSize: '72px', align: 'center' }).setOrigin(0.5)
+                
+                this.keyZ.on('down', ()=>{
+                    this.scene.start('Battle')
+                })
             }
         })
     }
